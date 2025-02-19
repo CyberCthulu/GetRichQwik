@@ -11,6 +11,8 @@ node_modules
 !dist
 dist-ssr
 *.local
+/instance/dev.db
+dev.db
 
 # Editor directories and files
 .vscode/*
