@@ -9,6 +9,9 @@ from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
 from .seeds import seed_commands
 from .config import Config
+import threading
+from .services.finnhub_ws import run_finnhub_ws
+
 
 app = Flask(__name__, static_folder='../react-vite/dist', static_url_path='/')
 
@@ -89,3 +92,7 @@ def react_root(path):
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
+
+if os.environ.get("FINNHUB_API_KEY"):
+    ws_thread = threading.Thread(target=run_finnhub_ws, args=(app,), daemon=True)
+    ws_thread.start()
