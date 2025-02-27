@@ -31,5 +31,3 @@ class Order(db.Model):
     executed_at = db.Column(db.DateTime, nullable=True)              # When the order was actually filled
 
     # Relationships
-    portfolio = db.relationship('Portfolio', backref='orders')
-    stock = db.relationship('Stock', backref='orders')
