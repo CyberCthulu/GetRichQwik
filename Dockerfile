@@ -19,8 +19,10 @@ RUN pip install psycopg2
 
 COPY . .
 
-RUN flask seed undo
+# Remove the auto-migrate step and just apply existing migrations
+RUN flask db upgrade
 
+# Seed the database (remove or adjust if you don't want auto-seeding in production)
 RUN flask seed all
 
 CMD gunicorn app:app
