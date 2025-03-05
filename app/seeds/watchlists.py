@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import db, Watchlist, User
+from app.models import db, Watchlist, User, environment, SCHEMA
 
 def seed_watchlists():
     # For example, create a watchlist for the user Demo
@@ -15,5 +15,9 @@ def seed_watchlists():
         db.session.commit()
 
 def undo_watchlists():
-    db.session.execute("DELETE FROM watchlists")
+    if environment == "production" and SCHEMA:
+        # Use TRUNCATE to also reset identities and cascade deletes
+        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.watchlists RESTART IDENTITY CASCADE;")
+    else:
+        db.session.execute("TRUNCATE TABLE watchlists RESTART IDENTITY CASCADE;")
     db.session.commit()
