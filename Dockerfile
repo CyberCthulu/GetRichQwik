@@ -19,7 +19,6 @@ RUN pip install psycopg2
 
 COPY . .
 
-RUN rm -rf migrations/versions/*
 RUN flask db migrate -m "run migrations"
 RUN flask db upgrade
 
