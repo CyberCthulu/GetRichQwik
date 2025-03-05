@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
@@ -7,8 +7,17 @@ from flask_login import LoginManager
 from .models import db, User
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
+from .api.stock_routes import stock_routes
+from .api.portfolio_routes import portfolio_routes
+from .api.order_routes import order_routes
+from .api.watchlist_routes import watchlist_routes
+
+
 from .seeds import seed_commands
 from .config import Config
+import threading
+from .services.finnhub_ws import run_finnhub_ws
+
 
 app = Flask(__name__, static_folder='../react-vite/dist', static_url_path='/')
 
@@ -28,6 +37,13 @@ app.cli.add_command(seed_commands)
 app.config.from_object(Config)
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(auth_routes, url_prefix='/api/auth')
+app.register_blueprint(portfolio_routes, url_prefix='/api/portfolios')
+app.register_blueprint(stock_routes, url_prefix='/api/stocks')
+app.register_blueprint(order_routes, url_prefix='/api/orders')
+app.register_blueprint(watchlist_routes, url_prefix='/api/watchlists')
+
+
+
 db.init_app(app)
 Migrate(app, db)
 
@@ -89,3 +105,11 @@ def react_root(path):
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return jsonify({"message": "Internal server error"}), 500
+
+if os.environ.get("FINNHUB_API_KEY"):
+    ws_thread = threading.Thread(target=run_finnhub_ws, args=(app,), daemon=True)
+    ws_thread.start()
