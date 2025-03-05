@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import db, Holding, Portfolio, Stock
+from app.models import db, Holding, Portfolio, Stock, environment, SCHEMA
 
 def seed_holdings():
     # Get the first portfolio and attempt to find a stock record, for example, "AAPL"
@@ -17,5 +17,9 @@ def seed_holdings():
         db.session.commit()
 
 def undo_holdings():
-    db.session.execute("DELETE FROM holdings")
+    if environment == "production" and SCHEMA:
+        # Use TRUNCATE to also reset identities and cascade deletes
+        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.holdings RESTART IDENTITY CASCADE;")
+    else:
+        db.session.execute("TRUNCATE TABLE holdings RESTART IDENTITY CASCADE;")
     db.session.commit()

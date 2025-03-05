@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import db, Order, Portfolio, Stock, OrderTypeEnum, OrderStatusEnum
+from app.models import db, Order, Portfolio, Stock, OrderTypeEnum, OrderStatusEnum, environment, SCHEMA
 
 def seed_orders():
     # Create a dummy order if a portfolio and stock (e.g., "AAPL") exist
@@ -23,5 +23,9 @@ def seed_orders():
         db.session.commit()
 
 def undo_orders():
-    db.session.execute("DELETE FROM orders")
+    if environment == "production" and SCHEMA:
+        # Use TRUNCATE to also reset identities and cascade deletes
+        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.orders RESTART IDENTITY CASCADE;")
+    else:
+        db.session.execute("TRUNCATE TABLE orders RESTART IDENTITY CASCADE;")
     db.session.commit()

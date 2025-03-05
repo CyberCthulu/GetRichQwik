@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import db, WatchlistStock, Watchlist, Stock
+from app.models import db, WatchlistStock, Watchlist, Stock, environment, SCHEMA
 
 def seed_watchlist_stocks():
     # Assume a watchlist exists and a stock (e.g., "TSLA") is in the database
@@ -15,5 +15,9 @@ def seed_watchlist_stocks():
         db.session.commit()
 
 def undo_watchlist_stocks():
-    db.session.execute("DELETE FROM watchlist_stocks")
+    if environment == "production" and SCHEMA:
+        # Use TRUNCATE to also reset identities and cascade deletes
+        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.watchlist_stocks RESTART IDENTITY CASCADE;")
+    else:
+        db.session.execute("TRUNCATE TABLE watchlist_stocks RESTART IDENTITY CASCADE;")
     db.session.commit()
