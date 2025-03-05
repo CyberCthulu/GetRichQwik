@@ -78,3 +78,4 @@ def run_finnhub_ws(app):
         )
         ws.on_open = on_open
         ws.run_forever()
+

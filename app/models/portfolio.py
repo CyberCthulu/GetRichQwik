@@ -17,3 +17,15 @@ class Portfolio(db.Model):
     user = db.relationship('User', backref='portfolios')
     holdings = db.relationship('Holding', backref='portfolio', cascade="all, delete-orphan")
     orders = db.relationship('Order', backref='portfolio', cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "name": self.name,
+            "portfolio_balance": float(self.portfolio_balance) if self.portfolio_balance is not None else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "holdings": [holding.to_dict() for holding in self.holdings] if self.holdings else [],
+            "orders": [order.to_dict() for order in self.orders] if self.orders else []
+        }

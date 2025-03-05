@@ -28,3 +28,15 @@ class Stock(db.Model):
     holdings = db.relationship('Holding', backref='stock', cascade="all, delete-orphan")
     orders = db.relationship('Order', backref='stock', cascade="all, delete-orphan")
     watchlist_stocks = db.relationship('WatchlistStock', backref='stock', cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "ticker_symbol": self.ticker_symbol,
+            "company_name": self.company_name,
+            "sector": self.sector,
+            "market_price": float(self.market_price) if self.market_price is not None else None,
+            "last_updated": self.last_updated.isoformat() if self.last_updated else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

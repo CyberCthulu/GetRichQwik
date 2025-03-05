@@ -19,3 +19,14 @@ class Holding(db.Model):
     quantity = db.Column(db.Numeric(15,4), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+def to_dict(self):
+    return {
+            "id": self.id,
+            "portfolio_id": self.portfolio_id,
+            "stock_id": self.stock_id,
+            "quantity": float(self.quantity),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }

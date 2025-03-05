@@ -30,4 +30,18 @@ class Order(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     executed_at = db.Column(db.DateTime, nullable=True)              # When the order was actually filled
 
-    # Relationships
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "portfolio_id": self.portfolio_id,
+            "stock_id": self.stock_id,
+            "order_type": self.order_type.value if self.order_type else None,
+            "quantity": float(self.quantity) if self.quantity is not None else None,
+            "target_price": float(self.target_price) if self.target_price is not None else None,
+            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None,
+            "status": self.status.value if self.status else None,
+            "executed_price": float(self.executed_price) if self.executed_price is not None else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "executed_at": self.executed_at.isoformat() if self.executed_at else None,
+        }
