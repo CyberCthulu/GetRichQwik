@@ -1,10 +1,19 @@
+import { useModal } from "../../context/Modal"
+import SignupFormPage from "../../components/SignupFormPage";
+
 export default function LandingPage() {
+  const { setModalContent } = useModal();
+
+  const openSignupModal = () => {
+    setModalContent(<SignupFormPage />);
+  };
+
     return (
       <div>
-        <h1>Landing Page</h1>
+        <h1>GetRichQwik!</h1>
         <p>Welcome to GetRichQwik!</p>
-        {/* Later: If user is logged in, redirect to /dashboard */}
-        {/* Otherwise, show 'Get Started' button to open Signup modal */}
+        <p>Learn how to make your Money Work for you!</p>
+        <button onClick={openSignupModal}>Get Started</button>
       </div>
     );
   }
