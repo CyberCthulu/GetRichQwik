@@ -1,14 +1,22 @@
-import {
-  legacy_createStore as createStore,
-  applyMiddleware,
-  compose,
-  combineReducers,
-} from "redux";
+import { legacy_createStore as createStore, applyMiddleware, compose, combineReducers, } from "redux";
 import thunk from "redux-thunk";
 import sessionReducer from "./session";
+import usersReducer from "./users";
+import portfoliosReducer from "./portfolios";
+import stocksReducer from "./stocks";
+import holdingsReducer from "./holdings";
+import watchlistsReducer from "./watchlists";
+import ordersReducer from "./orders";
+
 
 const rootReducer = combineReducers({
   session: sessionReducer,
+  users: usersReducer,
+  portfolios: portfoliosReducer,
+  stocks: stocksReducer,
+  holdings: holdingsReducer,
+  watchlists: watchlistsReducer,
+  orders: ordersReducer,
 });
 
 let enhancer;
