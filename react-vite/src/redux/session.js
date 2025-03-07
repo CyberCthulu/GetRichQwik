@@ -1,6 +1,13 @@
+
+import { csrfFetch } from "./csrf";
+
+
+/** Action Types **/
 const SET_USER = 'session/setUser';
 const REMOVE_USER = 'session/removeUser';
 
+
+/** Action Creators **/
 const setUser = (user) => ({
   type: SET_USER,
   payload: user
@@ -9,6 +16,8 @@ const setUser = (user) => ({
 const removeUser = () => ({
   type: REMOVE_USER
 });
+
+
 
 export const thunkAuthenticate = () => async (dispatch) => {
 	const response = await fetch("/api/auth/");
@@ -20,6 +29,14 @@ export const thunkAuthenticate = () => async (dispatch) => {
 
 		dispatch(setUser(data));
 	}
+};
+
+export const thunkRestoreUser = () => async (dispatch) => {
+  const res = await csrfFetch("/api/auth/current");
+  if (res.ok) {
+    const data = await res.json();
+    dispatch(setUser(data.user));
+  }
 };
 
 export const thunkLogin = (credentials) => async dispatch => {
@@ -59,7 +76,7 @@ export const thunkSignup = (user) => async (dispatch) => {
 };
 
 export const thunkLogout = () => async (dispatch) => {
-  await fetch("/api/auth/logout");
+  await csrfFetch("/api/auth/logout", { method: "POST" });
   dispatch(removeUser());
 };
 
