@@ -179,8 +179,8 @@ export default function Dashboard() {
                 <strong>{wl.name}</strong>
                 {wl.stocks && wl.stocks.length > 0 ? (
                   <ul>
-                    {wl.stocks.map((stockId) => (
-                      <li key={stockId}>Stock ID: {stockId}</li>
+                    {wl.stocks.map((stock) => (
+                      <li key={stock}> {stock.ticker_symbol} </li>
                     ))}
                   </ul>
                 ) : (
