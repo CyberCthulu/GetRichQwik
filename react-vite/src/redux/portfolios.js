@@ -56,7 +56,7 @@ export const thunkLoadOnePortfolio = (portfolioId) => async (dispatch) => {
 
 // POST create a new portfolio
 export const thunkCreatePortfolio = (payload) => async (dispatch) => {
-    const res = await csrfFetch("/api/portfolios", {
+    const res = await csrfFetch("/api/portfolios/", {
       method: "POST",
       body: JSON.stringify(payload),
     });

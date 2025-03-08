@@ -23,5 +23,5 @@ class Watchlist(db.Model):
             "name": self.name,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "watchlist_stocks": [ws.to_dict() for ws in self.watchlist_stocks] if self.watchlist_stocks else []
+            "stocks": [ws.stock.to_dict() for ws in self.watchlist_stocks] if self.watchlist_stocks else []
         }

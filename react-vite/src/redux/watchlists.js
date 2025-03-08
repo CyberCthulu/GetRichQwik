@@ -92,6 +92,20 @@ export const thunkRemoveStockFromWatchlist = (watchlistId, stockId) => async (di
   }
 };
 
+export const thunkLoadOneWatchlist = (watchlistId) => async (dispatch) => {
+  const res = await csrfFetch(`/api/watchlists/${watchlistId}`);
+  if (res.ok) {
+    const data = await res.json(); // { watchlist: {... with full stock objects } }
+    dispatch(updateWatchlistAction(data.watchlist));
+    return data.watchlist;
+  } else {
+    // handle error
+    const err = await res.json();
+    throw new Error(err.message || "Failed to load watchlist");
+  }
+};
+
+
 /** Reducer **/
 export default function watchlistsReducer(state = {}, action) {
   switch (action.type) {

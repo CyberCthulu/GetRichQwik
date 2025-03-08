@@ -1,5 +1,7 @@
 // src/redux/users.js
 import { csrfFetch } from "./csrf";
+import { setUser } from "./session"; // Import the session action
+
 
 // ----------------- Action Types ------------------
 const LOAD_USERS = "users/LOAD_USERS";
@@ -49,18 +51,28 @@ export const thunkLoadOneUser = (userId) => async (dispatch) => {
   }
 };
 
-// Update user
-export const thunkUpdateUser = (userId, formData) => async (dispatch) => {
-    const res = await csrfFetch(`/api/users/${userId}`, {
-      method: "PUT",
-      body: JSON.stringify(formData),
-    });
-    if (res.ok) {
-      const data = await res.json(); // { user: {...} }
-      dispatch(updateUser(data.user));
-      return data.user;
+export const thunkUpdateUser = (userId, formData) => async (dispatch, getState) => {
+  const res = await csrfFetch(`/api/users/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(formData),
+  });
+
+  if (res.ok) {
+    const data = await res.json(); // Expecting { user: {...} }
+    dispatch(updateUser(data.user)); // Update the users slice
+
+    // If the updated user is the logged-in user, update the session slice.
+    const currentSessionUser = getState().session.user;
+    if (currentSessionUser && currentSessionUser.id === data.user.id) {
+      dispatch(setUser(data.user));
     }
-  };
+    
+    return data.user;
+  } else {
+    throw res;
+  }
+};
+
 
   export const thunkDeleteUser = (userId) => async (dispatch) => {
     const res = await csrfFetch(`/api/users/${userId}`, {
