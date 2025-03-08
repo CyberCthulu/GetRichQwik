@@ -38,8 +38,8 @@ const removePortfolio = (portfolioId) => ({
 
 // GET all portfolios (for current user, e.g. /api/portfolios)
 export const thunkLoadPortfolios = () => async (dispatch) => {
-    const res = await csrfFetch("/api/portfolios");
-    if (res.ok) {
+  const res = await csrfFetch("/api/users/portfolios");
+  if (res.ok) {
       const data = await res.json(); // { portfolios: [...] }
       dispatch(loadPortfolios(data.portfolios));
     }
