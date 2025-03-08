@@ -257,3 +257,13 @@ def get_orders_for_portfolio(portfolio_id):
         return jsonify({"message": "Orders not found for the portfolio"}), 404
 
     return jsonify({"orders": [order.to_dict() for order in orders]}), 200
+
+
+@portfolio_routes.route('/<int:id>', methods=['GET'])
+@login_required
+def get_portfolio(id):
+    portfolio = Portfolio.query.get_or_404(id)
+    # Ensure the portfolio belongs to the current user
+    if portfolio.user_id != current_user.id:
+        return jsonify({"message": "Forbidden"}), 403
+    return jsonify({"portfolio": portfolio.to_dict()}), 200

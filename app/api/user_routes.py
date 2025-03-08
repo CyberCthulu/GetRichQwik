@@ -54,6 +54,9 @@ def update_user(id):
         user.email = data['email']
     if 'username' in data:
         user.username = data['username']
+    if 'cash_balance' in data:
+        # Possibly add logic or validation here
+        user.cash_balance = data['cash_balance']
 
     db.session.commit()
     return jsonify({"user": user.to_dict()}), 200

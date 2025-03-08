@@ -1,5 +1,7 @@
 from datetime import datetime
 from .db import db, environment, SCHEMA, add_prefix_for_prod
+from .stock import Stock 
+
 
 class WatchlistStock(db.Model):
     __tablename__ = 'watchlist_stocks'
@@ -17,6 +19,8 @@ class WatchlistStock(db.Model):
     watchlist_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('watchlists.id')), nullable=False)
     stock_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('stocks.id')), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship to Stock
 
     def to_dict(self):
         return {

@@ -115,3 +115,14 @@ def remove_stock_from_watchlist(watchlist_id, stock_id):
     db.session.delete(entry)
     db.session.commit()
     return jsonify({"message": "Stock removed from watchlist successfully"}), 200
+
+@watchlist_routes.route('/<int:watchlist_id>', methods=['GET'])
+@login_required
+def get_watchlist(watchlist_id):
+    """
+    Retrieves one watchlist by ID, including its stocks array.
+    """
+    watchlist = Watchlist.query.get_or_404(watchlist_id)
+    if watchlist.user_id != current_user.id:
+        return jsonify({"message": "Forbidden"}), 403
+    return jsonify({"watchlist": watchlist.to_dict()}), 200

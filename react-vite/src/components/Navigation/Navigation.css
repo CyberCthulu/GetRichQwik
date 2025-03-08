@@ -1,3 +1,64 @@
-.profile-dropdown {
-  position: absolute;
+/* src/components/Navigation/Navigation.css */
+
+.navigation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid #ccc;
+}
+
+.nav-left, .nav-middle, .nav-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo image or text */
+.nav-logo img {
+  height: 40px; /* adjust as needed */
+}
+
+/* Search Form */
+.search-form {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.search-input {
+  width: 200px;
+  padding: 5px;
+  margin-right: 5px;
+}
+
+.search-button {
+  padding: 5px 10px;
+}
+
+/* Explore Link */
+.explore-link {
+  text-decoration: none;
+  color: #333;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 5px 10px;
+}
+
+/* Right side: ProfileButton can stay as is */
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo img {
+  width: 50px;         /* Increase/decrease as desired */
+  height: 50px;        /* Must match width for a perfect circle */
+  border-radius: 80%;  /* Rounds the image into a circle */
+  transition: transform 0.2s ease-in-out; /* smooth animation */
+}
+
+.nav-logo img:hover {
+  transform: scale(1.1);
 }
