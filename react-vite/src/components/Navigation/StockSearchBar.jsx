@@ -23,11 +23,13 @@ export default function StockSearchBar() {
 
   const fetchSuggestions = async (q) => {
     try {
-      // Note the trailing slash to avoid a 308 redirect.
-      const res = await csrfFetch(`/api/stocks/?ticker=${encodeURIComponent(q.trim())}`);
+      const queryTrimmed = q.trim();
+      // Pass both ticker and company query parameters
+      const res = await csrfFetch(
+        `/api/stocks/?ticker=${encodeURIComponent(queryTrimmed)}&company=${encodeURIComponent(queryTrimmed)}`
+      );
       if (res.ok) {
         const data = await res.json();
-        // If the backend returns a 404 (i.e. no stocks found), our UI can just clear suggestions.
         const stocks = data.stocks || [];
         setResults(stocks);
       } else {
@@ -60,7 +62,7 @@ export default function StockSearchBar() {
       <form onSubmit={handleSubmit} className="search-form">
         <input
           type="text"
-          placeholder="Search stocks..."
+          placeholder="Search by ticker or company..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="search-input"

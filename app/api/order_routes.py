@@ -5,7 +5,7 @@ from app.models import Order, Portfolio, db, OrderTypeEnum, OrderStatusEnum
 
 order_routes = Blueprint('orders', __name__)
 
-@order_routes.route('/', methods=['POST'])
+@order_routes.route('', methods=['POST'])
 @login_required
 def create_order():
     """

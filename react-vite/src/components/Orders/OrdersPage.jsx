@@ -8,10 +8,10 @@ export default function OrdersPage() {
   const orders = useSelector((state) => Object.values(state.orders));
   const portfolios = useSelector((state) => Object.values(state.portfolios));
 
-  // Track which portfolio orders have already been fetched
+  // Track which portfolio orders have been fetched
   const loadedPortfolioIds = useRef(new Set());
 
-  // Load all portfolios on mount
+  // Load portfolios on mount
   useEffect(() => {
     dispatch(thunkLoadPortfolios());
   }, [dispatch]);
@@ -49,14 +49,22 @@ export default function OrdersPage() {
           ) : (
             pendingOrders.map((order) => (
               <div key={order.id} className="order-item">
-                <p><strong>ID:</strong> {order.id}</p>
+                <p><strong>Order ID:</strong> {order.id}</p>
+                <p>
+                  <strong>Ticker:</strong>{" "}
+                  {order.stock ? order.stock.ticker_symbol : '-'}
+                </p>
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {order.stock ? order.stock.company_name : '-'}
+                </p>
                 <p><strong>Type:</strong> {order.order_type}</p>
                 <p><strong>Quantity:</strong> {order.quantity}</p>
                 <p>
                   <strong>Target Price:</strong> {order.target_price ? order.target_price : '-'}
                 </p>
                 <p>
-                  <strong>Scheduled:</strong>{' '}
+                  <strong>Scheduled:</strong>{" "}
                   {order.scheduled_time
                     ? new Date(order.scheduled_time).toLocaleString()
                     : 'Immediate'}
@@ -77,14 +85,22 @@ export default function OrdersPage() {
           ) : (
             executedOrders.map((order) => (
               <div key={order.id} className="order-item">
-                <p><strong>ID:</strong> {order.id}</p>
+                <p><strong>Order ID:</strong> {order.id}</p>
+                <p>
+                  <strong>Ticker:</strong>{" "}
+                  {order.stock ? order.stock.ticker_symbol : '-'}
+                </p>
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {order.stock ? order.stock.company_name : '-'}
+                </p>
                 <p><strong>Type:</strong> {order.order_type}</p>
                 <p><strong>Quantity:</strong> {order.quantity}</p>
                 <p>
                   <strong>Executed Price:</strong> {order.executed_price ? order.executed_price : '-'}
                 </p>
                 <p>
-                  <strong>Executed At:</strong>{' '}
+                  <strong>Executed At:</strong>{" "}
                   {order.executed_at
                     ? new Date(order.executed_at).toLocaleString()
                     : '-'}
@@ -102,11 +118,19 @@ export default function OrdersPage() {
           ) : (
             cancelledOrders.map((order) => (
               <div key={order.id} className="order-item">
-                <p><strong>ID:</strong> {order.id}</p>
+                <p><strong>Order ID:</strong> {order.id}</p>
+                <p>
+                  <strong>Ticker:</strong>{" "}
+                  {order.stock ? order.stock.ticker_symbol : '-'}
+                </p>
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {order.stock ? order.stock.company_name : '-'}
+                </p>
                 <p><strong>Type:</strong> {order.order_type}</p>
                 <p><strong>Quantity:</strong> {order.quantity}</p>
                 <p>
-                  <strong>Cancelled At:</strong>{' '}
+                  <strong>Cancelled At:</strong>{" "}
                   {order.updated_at
                     ? new Date(order.updated_at).toLocaleString()
                     : '-'}
