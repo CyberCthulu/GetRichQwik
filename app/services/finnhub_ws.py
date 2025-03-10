@@ -5,8 +5,8 @@ import websocket
 from datetime import datetime
 from threading import Thread
 from contextlib import contextmanager
-
 from app.models import db, Stock
+from app.services.finnhub_api import finnhub_client  # finnhub-python client
 
 FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
 
@@ -37,18 +37,27 @@ def run_finnhub_ws(app):
                         stock.last_updated = trade_time
                         print(f"Updated {ticker}: {price} at {trade_time}")
                     else:
-                        # Create a new Stock record if one doesn't exist
+                        # Use finnhub-python to fetch company profile details
+                        try:
+                            profile = finnhub_client.company_profile2(symbol=ticker)
+                            company_name = profile.get("name", ticker)
+                            sector = profile.get("finnhubIndustry", "")
+                        except Exception as e:
+                            print(f"Error fetching profile for {ticker}: {e}")
+                            company_name = ticker
+                            sector = ""
+
                         stock = Stock(
                             ticker_symbol=ticker,
-                            company_name=ticker,
-                            sector="",
+                            company_name=company_name,
+                            sector=sector,
                             market_price=price,
                             last_updated=trade_time,
                             created_at=datetime.utcnow(),
                             updated_at=datetime.utcnow()
                         )
                         db.session.add(stock)
-                        print(f"Created new stock record for {ticker}")
+                        print(f"Created new stock record for {ticker} with name: {company_name}")
 
                 db.session.commit()
             else:
@@ -78,4 +87,3 @@ def run_finnhub_ws(app):
         )
         ws.on_open = on_open
         ws.run_forever()
-

@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import or_
 from app.models import Stock
 
 stock_routes = Blueprint('stocks', __name__)
@@ -21,10 +22,19 @@ def get_stocks():
     company = request.args.get("company")
 
     query = Stock.query
-    if ticker:
+    if ticker and company:
+        # Use OR so that either the ticker OR the company name can match the search term
+        query = query.filter(
+            or_(
+                Stock.ticker_symbol.ilike(f"%{ticker}%"),
+                Stock.company_name.ilike(f"%{company}%")
+            )
+        )
+    elif ticker:
         query = query.filter(Stock.ticker_symbol.ilike(f"%{ticker}%"))
-    if company:
+    elif company:
         query = query.filter(Stock.company_name.ilike(f"%{company}%"))
+    
     stocks = query.all()
 
     if not stocks:
