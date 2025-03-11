@@ -35,9 +35,5 @@ def seed_portfolios():
     db.session.commit()
 
 def undo_portfolios():
-    if environment == "production" and SCHEMA:
-        # Use TRUNCATE to also reset identities and cascade deletes
-        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.portfolios RESTART IDENTITY CASCADE;")
-    else:
-        db.session.execute("TRUNCATE TABLE portfolios RESTART IDENTITY CASCADE;")
+    db.session.execute("DELETE FROM portfolios;")
     db.session.commit()

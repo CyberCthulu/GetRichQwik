@@ -71,14 +71,19 @@ export default function PortfolioDetail() {
           {holdings.map((holding) => (
             <li key={holding.id} className="holding-item">
               <p>
+                <strong>Stock Ticker:</strong> {holding.stock?.ticker_symbol}
+              </p>
+              <p>
+                <strong>Company Name:</strong> {holding.stock?.company_name}
+              </p>
+              <p>
                 <strong>Stock ID:</strong> {holding.stock_id}
               </p>
               <p>
                 <strong>Quantity:</strong> {holding.quantity}
               </p>
               <p>
-                <strong>Avg. Purchase Price:</strong> $
-                {holding.average_purchase_price.toFixed(2)}
+                <strong>Current Price:</strong> ${holding.stock ? Number(holding.stock.market_price).toFixed(2) : "N/A"}
               </p>
               <div className="holding-actions">
                 <button onClick={() => openBuySellModal(holding, "buy")}>

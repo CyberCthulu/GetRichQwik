@@ -5,6 +5,7 @@ from .holdings import seed_holdings, undo_holdings
 from .watchlists import seed_watchlists, undo_watchlists
 from .watchlist_stocks import seed_watchlist_stocks, undo_watchlist_stocks
 from .orders import seed_orders, undo_orders
+from .stocks import seed_stocks, undo_stocks  
 
 
 from app.models.db import db, environment, SCHEMA
@@ -24,12 +25,14 @@ def seed():
         # Make sure to add all your other model's undo functions below
         undo_users()
         undo_orders()
+        undo_stocks()
         undo_watchlist_stocks()
         undo_watchlists()
         undo_holdings()
         undo_portfolios()
     seed_users()
     seed_portfolios()
+    seed_stocks()
     seed_holdings()
     seed_watchlists()
     seed_watchlist_stocks()
@@ -41,9 +44,11 @@ def seed():
 @seed_commands.command('undo')
 def undo():
     undo_users()
+    undo_stocks()
     undo_orders()
     undo_watchlist_stocks()
     undo_watchlists()
     undo_holdings()
     undo_portfolios()
+    
     # Add other undo functions here
