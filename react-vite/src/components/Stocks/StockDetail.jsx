@@ -1,5 +1,5 @@
 // // src/components/StockDetail/StockDetail.jsx
-// import { useEffect, useState } from "react";
+// import { useEffect, useState, useRef } from "react";
 // import { useParams } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
 // import { thunkLoadOneStock } from "../../redux/stocks";
@@ -7,6 +7,26 @@
 // import BuyOrderModal from "./BuyOrderModal";
 // import AddToWatchlistModal from "./AddToWatchlistModal";
 // import { Line } from "react-chartjs-2";
+
+
+// // Helper function: generate simulated historical candle data
+// function generateSimulatedChartData(basePrice, days = 10) {
+//   const data = [];
+//   const today = new Date();
+//   // For each of the past 'days' (older to recent)
+//   for (let i = days - 1; i >= 0; i--) {
+//     const date = new Date(today);
+//     date.setDate(date.getDate() - i);
+//     // Simulate a slight fluctuation around basePrice (you can adjust the randomness)
+//     const fluctuation = (Math.random() - 0.5) * 10; // ±5 units variation
+//     const simulatedPrice = basePrice + fluctuation;
+//     data.push({
+//       date: date.toLocaleDateString(),
+//       price: Math.max(simulatedPrice, 0), // Ensure price isn’t negative
+//     });
+//   }
+//   return data;
+// }
 
 // export default function StockDetail() {
 //   const { id } = useParams();
@@ -16,28 +36,77 @@
 
 //   const [timeRange, setTimeRange] = useState("1D");
 //   const [chartData, setChartData] = useState([]);
+//   // localPrice holds the real‑time price update for the current stock
+//   const [localPrice, setLocalPrice] = useState(null);
+//   // Ref for the dedicated WebSocket connection
+//   const wsRef = useRef(null);
 
-//   // Load the stock info on mount
+//   // 1) Load the stock info from the server on mount
 //   useEffect(() => {
 //     dispatch(thunkLoadOneStock(id));
 //   }, [dispatch, id]);
 
-//   // Mock or real chart data fetch whenever timeRange changes
+//   // 2) Set up a dedicated WebSocket connection for real‑time price updates
 //   useEffect(() => {
-//     const simulatedData = [
-//       { date: "2025-03-01", price: 150 },
-//       { date: "2025-03-02", price: 152 },
-//       { date: "2025-03-03", price: 148 },
-//       { date: "2025-03-04", price: 155 },
-//     ];
+//     if (!stock) return; // Wait until stock data is loaded
+//     const ticker = stock.ticker_symbol;
+//     const FINNHUB_WS_URL = `wss://ws.finnhub.io?token=${import.meta.env.VITE_FINNHUB_API_KEY}`;
+//     const ws = new WebSocket(FINNHUB_WS_URL);
+//     wsRef.current = ws;
+
+//     ws.onopen = () => {
+//       console.log("Dedicated WS connection opened for", ticker);
+//       ws.send(JSON.stringify({ type: "subscribe", symbol: ticker }));
+//     };
+
+//     ws.onmessage = (event) => {
+//       try {
+//         const data = JSON.parse(event.data);
+//         if (data.type === "trade" && data.data) {
+//           data.data.forEach((trade) => {
+//             if (trade.s === ticker) {
+//               // Update local price with the latest trade price
+//               setLocalPrice(trade.p);
+//               console.log(`Received update for ${ticker}: ${trade.p}`);
+//             }
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Error parsing WS message:", error);
+//       }
+//     };
+
+//     ws.onerror = (error) => {
+//       console.error("WebSocket error:", error);
+//     };
+
+//     // Cleanup: Unsubscribe and close WS connection on unmount
+//     return () => {
+//       if (ws.readyState === WebSocket.OPEN) {
+//         ws.send(JSON.stringify({ type: "unsubscribe", symbol: ticker }));
+//       }
+//       ws.close();
+//     };
+//   }, [stock]);
+
+//   // 3) Generate simulated historical chart data whenever the price or timeRange changes
+//   useEffect(() => {
+//     if (!stock) return;
+//     // Use the real-time localPrice if available; otherwise, use DB price
+//     const basePrice = localPrice !== null ? localPrice : stock.market_price;
+//     // For now, generate simulated data regardless of timeRange (you could modify this per range)
+//     const simulatedData = generateSimulatedChartData(basePrice, 10);
 //     setChartData(simulatedData);
-//   }, [timeRange]);
+//   }, [stock, localPrice, timeRange]);
 
 //   if (!stock) {
 //     return <div>Loading stock details...</div>;
 //   }
 
-//   // Handlers for the two buttons
+//   // Determine the displayed price
+//   const displayedPrice = localPrice !== null ? localPrice : stock.market_price;
+
+//   // Handlers for modals
 //   const handleReviewOrder = () => {
 //     setModalContent(<BuyOrderModal stockId={id} />);
 //   };
@@ -46,7 +115,7 @@
 //     setModalContent(<AddToWatchlistModal stockId={id} />);
 //   };
 
-//   // Chart.js data and options
+//   // Prepare the data for Chart.js
 //   const chartJSData = {
 //     labels: chartData.map((point) => point.date),
 //     datasets: [
@@ -73,9 +142,7 @@
 //         {stock.ticker_symbol} – {stock.company_name}
 //       </h1>
 //       <p>Sector: {stock.sector}</p>
-//       <p>Current Price: ${Number(stock.market_price).toFixed(2)}</p>
-
-//       {/* Chart Section */}
+//       <p>Current Price: ${Number(displayedPrice).toFixed(2)}</p>
 //       <div className="chart-section">
 //         <Line data={chartJSData} options={chartJSOptions} />
 //         <div className="time-range-buttons">
@@ -83,28 +150,22 @@
 //             <button
 //               key={range}
 //               onClick={() => setTimeRange(range)}
-//               style={{
-//                 fontWeight: timeRange === range ? "bold" : "normal",
-//               }}
+//               style={{ fontWeight: timeRange === range ? "bold" : "normal" }}
 //             >
 //               {range}
 //             </button>
 //           ))}
 //         </div>
 //       </div>
-
-//       {/* Buy Stock Card */}
 //       <div className="buy-stock-card">
-//       <h2>Buy {stock.ticker_symbol}</h2>
-//       <p>Market Price: ${Number(stock.market_price).toFixed(2)}</p>
+//         <h2>Buy {stock.ticker_symbol}</h2>
+//         <p>Market Price: ${Number(displayedPrice).toFixed(2)}</p>
 //         <button onClick={handleReviewOrder}>Review Order</button>
 //         <button onClick={handleAddToWatchlist}>Add to List</button>
 //       </div>
 //     </div>
 //   );
 // }
-
-
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -114,56 +175,123 @@ import BuyOrderModal from "./BuyOrderModal";
 import AddToWatchlistModal from "./AddToWatchlistModal";
 import { Line } from "react-chartjs-2";
 
+/**
+ * Generate simulated historical data based on the selected time range.
+ * For "1D", we generate e.g. 8 hourly points; for "1W", 7 daily points, etc.
+ */
+function generateSimulatedChartData(basePrice, timeRange) {
+  let dataPoints;
+  let stepInHours = 24; // default daily
+
+  switch (timeRange) {
+    case "1D":
+      dataPoints = 8;  // 8 hourly points for the day
+      stepInHours = 3; // each point ~3 hours
+      break;
+    case "1W":
+      dataPoints = 7;  // 7 daily points
+      stepInHours = 24;
+      break;
+    case "1M":
+      dataPoints = 30; // 30 daily points
+      stepInHours = 24;
+      break;
+    case "3M":
+      dataPoints = 12; // e.g. 12 weekly points
+      stepInHours = 24 * 7;
+      break;
+    case "YTD":
+    case "1Y":
+      dataPoints = 12; // 12 monthly points
+      stepInHours = 24 * 30;
+      break;
+    case "ALL":
+      dataPoints = 10; // e.g. 10 yearly points
+      stepInHours = 24 * 365;
+      break;
+    default:
+      dataPoints = 8;
+      stepInHours = 3;
+  }
+
+  const now = new Date();
+  const data = [];
+
+  for (let i = 0; i < dataPoints; i++) {
+    // random fluctuation around basePrice (± 1.5%)
+    const fluctuation = (Math.random() - 0.5) * basePrice * 0.03;
+    const simulatedPrice = Math.max(basePrice + fluctuation, 0);
+
+    const dateObj = new Date(now);
+    // Each iteration goes backward in time by stepInHours
+    dateObj.setHours(dateObj.getHours() - stepInHours * (dataPoints - i - 1));
+
+    data.push({
+      // e.g. "3/12/2025, 2:00 PM" or short date
+      date: dateObj.toLocaleString([], { month: "numeric", day: "numeric" }),
+      price: simulatedPrice,
+    });
+  }
+  return data;
+}
+
 export default function StockDetail() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const stock = useSelector((state) => state.stocks[id]);
   const { setModalContent } = useModal();
 
-  const [timeRange, setTimeRange] = useState("1D");
-  const [chartData, setChartData] = useState([]);
+  // Real-time local price from WebSocket
   const [localPrice, setLocalPrice] = useState(null);
+  // Time range for chart
+  const [timeRange, setTimeRange] = useState("1D");
+  // Simulated chart data
+  const [chartData, setChartData] = useState([]);
+
+  // Keep a reference to the dedicated WebSocket so we can close it
   const wsRef = useRef(null);
 
-  // 1) Always load the stock from the server
+  /**
+   * 1) Load the stock data from the backend
+   */
   useEffect(() => {
     dispatch(thunkLoadOneStock(id));
   }, [dispatch, id]);
 
-  // 2) Set up your WebSocket once stock is loaded
+  /**
+   * 2) Set up a dedicated WebSocket for real-time price updates
+   */
   useEffect(() => {
-    // If the stock is not loaded yet, do nothing
     if (!stock) return;
-
     const ticker = stock.ticker_symbol;
-    const FINNHUB_WS_URL = `wss://ws.finnhub.io?token=${import.meta.env.VITE_FINNHUB_API_KEY}`;
-    console.log('Finnhub key:', import.meta.env.VITE_FINNHUB_API_KEY);
-    const ws = new WebSocket(FINNHUB_WS_URL);
+    const wsUrl = `wss://ws.finnhub.io?token=${import.meta.env.VITE_FINNHUB_API_KEY}`;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
       console.log("WS open for:", ticker);
+      // subscribe to real-time trades
       ws.send(JSON.stringify({ type: "subscribe", symbol: ticker }));
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = (evt) => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.type === "trade" && data.data) {
-          data.data.forEach((trade) => {
+        const parsed = JSON.parse(evt.data);
+        if (parsed.type === "trade" && parsed.data) {
+          for (const trade of parsed.data) {
             if (trade.s === ticker) {
               setLocalPrice(trade.p);
-              console.log(`Received update for ${ticker}: ${trade.p}`);
+              // console.log(`[WS] ${ticker} => ${trade.p}`);
             }
-          });
+          }
         }
       } catch (err) {
-        console.error("Error parsing WS message:", err);
+        console.error("Error parsing WS data:", err);
       }
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
     };
 
     return () => {
@@ -174,59 +302,49 @@ export default function StockDetail() {
     };
   }, [stock]);
 
-  // 3) Chart data effect (always declared)
+  /**
+   * 3) Generate or fetch historical data whenever localPrice or timeRange changes
+   */
   useEffect(() => {
-    // If no stock yet, skip
     if (!stock) return;
-
-    // Use the localPrice if available, else the DB price
-    const displayedPrice = localPrice !== null ? localPrice : stock.market_price;
-
-    // Replace with real chart data if available:
-    const simulatedData = [
-      { date: "2025-03-01", price: displayedPrice },
-      { date: "2025-03-02", price: displayedPrice },
-      { date: "2025-03-03", price: displayedPrice },
-      { date: "2025-03-04", price: displayedPrice },
-    ];
+    const currentPrice = localPrice != null ? localPrice : stock.market_price;
+    const simulatedData = generateSimulatedChartData(currentPrice, timeRange);
     setChartData(simulatedData);
   }, [stock, localPrice, timeRange]);
 
-  // 4) After all hooks are declared, handle the "no stock" case
   if (!stock) {
     return <div>Loading stock details...</div>;
   }
 
-  // Use localPrice if available; fallback to DB price
-  const displayedPrice = localPrice !== null ? localPrice : stock.market_price;
+  const displayedPrice = localPrice != null ? localPrice : stock.market_price;
 
-  const handleReviewOrder = () => {
-    setModalContent(<BuyOrderModal stockId={id} />);
-  };
-
-  const handleAddToWatchlist = () => {
-    setModalContent(<AddToWatchlistModal stockId={id} />);
-  };
-
-  // Chart.js
+  // Chart.js data
   const chartJSData = {
-    labels: chartData.map((point) => point.date),
+    labels: chartData.map((p) => p.date),
     datasets: [
       {
         label: `${stock.ticker_symbol} Price`,
-        data: chartData.map((point) => point.price),
+        data: chartData.map((p) => p.price),
         borderColor: "rgba(75,192,192,1)",
         fill: false,
       },
     ],
   };
 
-  const chartJSOptions = {
+  const chartOptions = {
     responsive: true,
     plugins: {
       legend: { position: "top" },
       title: { display: true, text: `${stock.ticker_symbol} - ${timeRange}` },
     },
+  };
+
+  // Modal handlers
+  const handleReviewOrder = () => {
+    setModalContent(<BuyOrderModal stockId={id} />);
+  };
+  const handleAddToWatchlist = () => {
+    setModalContent(<AddToWatchlistModal stockId={id} />);
   };
 
   return (
@@ -235,22 +353,18 @@ export default function StockDetail() {
         {stock.ticker_symbol} – {stock.company_name}
       </h1>
       <p>Sector: {stock.sector}</p>
-      <p>
-        Current Price: $
-        {Number(displayedPrice).toFixed(2)}
-      </p>
+      <p>Current Price: ${displayedPrice.toFixed(2)}</p>
 
       {/* Chart Section */}
       <div className="chart-section">
-        <Line data={chartJSData} options={chartJSOptions} />
+        <Line data={chartJSData} options={chartOptions} />
+        {/* Time Range Buttons */}
         <div className="time-range-buttons">
           {["1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"].map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              style={{
-                fontWeight: timeRange === range ? "bold" : "normal",
-              }}
+              style={{ fontWeight: timeRange === range ? "bold" : "normal" }}
             >
               {range}
             </button>
@@ -261,7 +375,7 @@ export default function StockDetail() {
       {/* Buy Stock Card */}
       <div className="buy-stock-card">
         <h2>Buy {stock.ticker_symbol}</h2>
-        <p>Market Price: ${Number(displayedPrice).toFixed(2)}</p>
+        <p>Market Price: ${displayedPrice.toFixed(2)}</p>
         <button onClick={handleReviewOrder}>Review Order</button>
         <button onClick={handleAddToWatchlist}>Add to List</button>
       </div>

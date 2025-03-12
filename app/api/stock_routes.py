@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
 from app.models import Stock, db
+from app.services.finnhub_api import finnhub_client 
 
 stock_routes = Blueprint('stocks', __name__)
 
@@ -50,3 +51,4 @@ def get_stock_details(stock_id):
     if not stock:
         return jsonify({"message": "Stock not found"}), 404
     return jsonify({"stock": stock.to_dict()}), 200
+
