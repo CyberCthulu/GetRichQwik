@@ -17,9 +17,5 @@ def seed_holdings():
         db.session.commit()
 
 def undo_holdings():
-    if environment == "production" and SCHEMA:
-        # Use TRUNCATE to also reset identities and cascade deletes
-        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.holdings RESTART IDENTITY CASCADE;")
-    else:
-        db.session.execute("TRUNCATE TABLE holdings RESTART IDENTITY CASCADE;")
+    db.session.execute("DELETE FROM holdings;")
     db.session.commit()

@@ -5,7 +5,7 @@ from app.models import Order, Portfolio, db, OrderTypeEnum, OrderStatusEnum
 
 order_routes = Blueprint('orders', __name__)
 
-@order_routes.route('/', methods=['POST'])
+@order_routes.route('', methods=['POST'])
 @login_required
 def create_order():
     """
@@ -126,25 +126,20 @@ def update_order(order_id):
 @order_routes.route('/<int:order_id>', methods=['DELETE'])
 @login_required
 def delete_order(order_id):
-    """
-    Cancels (soft-deletes) an order that has not yet been executed.
-    Successful Response:
-      - Status Code: 200
-      - Body: { "message": "Order canceled successfully" }
-    Error Response:
-      - Status Code: 404
-      - Body: { "message": "Order not found" }
-    """
     order = Order.query.get(order_id)
     if not order:
         return jsonify({"message": "Order not found"}), 404
 
-    # Ensure the order belongs to the current user.
     if order.portfolio.user_id != current_user.id:
         return jsonify({"message": "Forbidden"}), 403
 
-    # Soft-delete: update deleted_at field.
     order.deleted_at = datetime.utcnow()
+    order.status = OrderStatusEnum.cancelled  # updated to set status to cancelled
     db.session.commit()
 
-    return jsonify({"message": "Order canceled successfully"}), 200
+    return jsonify({
+         "order": order.to_dict(),
+         "message": "Order canceled successfully"
+    }), 200
+
+

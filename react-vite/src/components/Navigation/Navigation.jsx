@@ -1,11 +1,13 @@
 // src/components/Navigation/Navigation.jsx
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 import ProfileButton from "./ProfileButton";
 import StockSearchBar from "./StockSearchBar";
+import ExploreMenu from "./ExploreMenu";
 import "./Navigation.css";
 
 function Navigation() {
-  const navigate = useNavigate();
+  const sessionUser = useSelector((state) => state.session.user);
 
   return (
     <nav className="navigation-bar">
@@ -18,14 +20,12 @@ function Navigation() {
 
       {/* Middle: Stock Search Bar */}
       <div className="nav-middle">
-        <StockSearchBar />
+        {sessionUser && <StockSearchBar />}
       </div>
 
-      {/* Right: Explore Button and Profile Button */}
+      {/* Right: Explore Dropdown and Profile Button */}
       <div className="nav-right">
-        <NavLink to="/explore" className="explore-link">
-          Explore
-        </NavLink>
+        {sessionUser && <ExploreMenu />}
         <ProfileButton />
       </div>
     </nav>

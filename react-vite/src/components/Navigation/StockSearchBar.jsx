@@ -21,15 +21,17 @@ export default function StockSearchBar() {
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
+  // This endpoint should now only search within the seeded stocks in your database.
   const fetchSuggestions = async (q) => {
     try {
-      // Note the trailing slash to avoid a 308 redirect.
-      const res = await csrfFetch(`/api/stocks/?ticker=${encodeURIComponent(q.trim())}`);
+      const queryTrimmed = q.trim();
+      const res = await csrfFetch(
+        `/api/stocks/search?q=${encodeURIComponent(queryTrimmed)}`
+      );
       if (res.ok) {
         const data = await res.json();
-        // If the backend returns a 404 (i.e. no stocks found), our UI can just clear suggestions.
-        const stocks = data.stocks || [];
-        setResults(stocks);
+        // data.stocks will come solely from your seeded stocks
+        setResults(data.stocks || []);
       } else {
         setResults([]);
       }
@@ -39,17 +41,18 @@ export default function StockSearchBar() {
     }
   };
 
-  const handleResultClick = (stockId) => {
-    navigate(`/stocks/${stockId}`);
+  const handleResultClick = (stock) => {
+    // Use the numeric id if available; otherwise, fallback to the ticker symbol.
+    const target = stock.id ? stock.id : stock.ticker_symbol;
+    navigate(`/stocks/${target}`);
     setQuery("");
     setResults([]);
   };
 
-  // On form submission, if one result is found, navigate to it; otherwise, navigate to a search results page.
   const handleSubmit = (e) => {
     e.preventDefault();
     if (results.length === 1) {
-      navigate(`/stocks/${results[0].id}`);
+      handleResultClick(results[0]);
     } else if (query.trim()) {
       navigate(`/stocks?query=${encodeURIComponent(query.trim())}`);
     }
@@ -60,7 +63,7 @@ export default function StockSearchBar() {
       <form onSubmit={handleSubmit} className="search-form">
         <input
           type="text"
-          placeholder="Search stocks..."
+          placeholder="Search by ticker or company..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="search-input"
@@ -71,10 +74,10 @@ export default function StockSearchBar() {
       </form>
       {results.length > 0 && (
         <ul className="search-results">
-          {results.map((stock) => (
+          {results.map((stock, index) => (
             <li
-              key={stock.id}
-              onClick={() => handleResultClick(stock.id)}
+              key={stock.id || index}
+              onClick={() => handleResultClick(stock)}
               className="search-result-item"
             >
               {stock.ticker_symbol} – {stock.company_name}

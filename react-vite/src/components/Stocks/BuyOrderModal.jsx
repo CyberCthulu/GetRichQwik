@@ -1,18 +1,50 @@
 // src/components/StockDetail/BuyOrderModal.jsx
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-// import { thunkCreateOrder } from "../../redux/orders";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { thunkCreateOrder } from "../../redux/orders";
+import { thunkLoadPortfolios } from "../../redux/portfolios";
 
 export default function BuyOrderModal({ stockId, onClose }) {
   const dispatch = useDispatch();
-  const [quantity, setQuantity] = useState(0);
-  const [orderType, setOrderType] = useState("market");
+  const [quantity, setQuantity] = useState(1);
+  const [isLimitOrder, setIsLimitOrder] = useState(false);
   const [limitPrice, setLimitPrice] = useState("");
+  const [selectedPortfolio, setSelectedPortfolio] = useState("");
+  
+  // Get portfolios and session user from Redux
+  const portfolios = useSelector((state) => Object.values(state.portfolios));
+  const sessionUser = useSelector((state) => state.session.user);
 
-  const handleSubmit = (e) => {
+  // Load portfolios when the modal mounts
+  useEffect(() => {
+    if (sessionUser) {
+      dispatch(thunkLoadPortfolios());
+    }
+  }, [dispatch, sessionUser]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // dispatch(thunkCreateOrder({ stock_id: stockId, quantity, orderType, limitPrice }));
-    if (onClose) onClose();
+
+    if (!selectedPortfolio) {
+      alert("Please select a portfolio.");
+      return;
+    }
+
+    // Construct payload:
+    // Always use "buy" for order_type.
+    const payload = {
+      portfolio_id: Number(selectedPortfolio),
+      stock_id: Number(stockId),
+      order_type: "buy", 
+      quantity: parseFloat(quantity),
+      target_price: isLimitOrder ? parseFloat(limitPrice) : null,
+      scheduled_time: null, // Extend as needed
+    };
+
+    const newOrder = await dispatch(thunkCreateOrder(payload));
+    if (newOrder) {
+      if (onClose) onClose();
+    }
   };
 
   return (
@@ -30,14 +62,14 @@ export default function BuyOrderModal({ stockId, onClose }) {
 
         <label>Order Type:</label>
         <select
-          value={orderType}
-          onChange={(e) => setOrderType(e.target.value)}
+          value={isLimitOrder ? "limit" : "market"}
+          onChange={(e) => setIsLimitOrder(e.target.value === "limit")}
         >
           <option value="market">Market</option>
           <option value="limit">Limit</option>
         </select>
 
-        {orderType === "limit" && (
+        {isLimitOrder && (
           <>
             <label>Limit Price:</label>
             <input
@@ -45,12 +77,29 @@ export default function BuyOrderModal({ stockId, onClose }) {
               step="0.01"
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
+              required
             />
           </>
         )}
 
+        <label>Portfolio:</label>
+        <select
+          value={selectedPortfolio}
+          onChange={(e) => setSelectedPortfolio(e.target.value)}
+          required
+        >
+          <option value="">-- Select a Portfolio --</option>
+          {portfolios.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} (Balance: ${Number(p.portfolio_balance).toFixed(2)})
+            </option>
+          ))}
+        </select>
+
         <button type="submit">Place Order</button>
-        <button type="button" onClick={onClose}>Cancel</button>
+        <button type="button" onClick={onClose}>
+          Cancel
+        </button>
       </form>
     </div>
   );

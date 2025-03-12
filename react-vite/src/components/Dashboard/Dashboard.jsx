@@ -110,7 +110,7 @@ export default function Dashboard() {
       {
         label: "Portfolio Value",
         data: chartData.map((point) => point.value),
-        borderColor: "rgba(75, 192, 192, 1)",
+        borderColor: "rgb(75, 192, 120)",
         fill: false,
       },
     ],

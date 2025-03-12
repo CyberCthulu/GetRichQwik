@@ -55,7 +55,8 @@ export const thunkDeleteOrder = (orderId) => async (dispatch) => {
     method: "DELETE",
   });
   if (res.ok) {
-    dispatch(removeOrder(orderId));
+    const data = await res.json(); // Now includes { order: {...}, message: ... }
+    dispatch(updateOrderAction(data.order)); // Update the order in Redux state
   }
 };
 

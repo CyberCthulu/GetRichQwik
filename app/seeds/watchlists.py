@@ -15,9 +15,5 @@ def seed_watchlists():
         db.session.commit()
 
 def undo_watchlists():
-    if environment == "production" and SCHEMA:
-        # Use TRUNCATE to also reset identities and cascade deletes
-        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.watchlists RESTART IDENTITY CASCADE;")
-    else:
-        db.session.execute("TRUNCATE TABLE watchlists RESTART IDENTITY CASCADE;")
+    db.session.execute("DELETE FROM watchlists;")
     db.session.commit()
