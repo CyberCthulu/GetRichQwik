@@ -35,5 +35,5 @@ def seed_portfolios():
     db.session.commit()
 
 def undo_portfolios():
-    db.session.execute("DELETE FROM portfolios;")
+    db.session.execute("TRUNCATE portfolios RESTART IDENTITY CASCADE;")
     db.session.commit()

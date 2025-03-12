@@ -23,5 +23,5 @@ def seed_orders():
         db.session.commit()
 
 def undo_orders():
-    db.session.execute("DELETE FROM orders;")
+    db.session.execute("TRUNCATE orders RESTART IDENTITY CASCADE;")
     db.session.commit()

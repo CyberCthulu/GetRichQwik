@@ -15,5 +15,5 @@ def seed_watchlists():
         db.session.commit()
 
 def undo_watchlists():
-    db.session.execute("DELETE FROM watchlists;")
+    db.session.execute("TRUNCATE watchlists RESTART IDENTITY CASCADE;")
     db.session.commit()

@@ -17,5 +17,5 @@ def seed_holdings():
         db.session.commit()
 
 def undo_holdings():
-    db.session.execute("DELETE FROM holdings;")
+    db.session.execute("TRUNCATE holdings RESTART IDENTITY CASCADE;")
     db.session.commit()
