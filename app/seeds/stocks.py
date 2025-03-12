@@ -1,6 +1,5 @@
-# app/seeds/seed_stocks.py
 from datetime import datetime
-from app.models import db, Stock
+from app.models import db, Stock, environment, SCHEMA
 
 def seed_stocks():
     # List of curated stocks – add or remove entries as desired.
