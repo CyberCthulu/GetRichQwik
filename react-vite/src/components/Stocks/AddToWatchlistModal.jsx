@@ -1,35 +1,72 @@
 // src/components/StockDetail/AddToWatchlistModal.jsx
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { thunkLoadWatchlists, thunkAddStockToWatchlist } from "../../redux/watchlists";
+import {
+  thunkLoadWatchlists,
+  thunkAddStockToWatchlist,
+} from "../../redux/watchlists";
+import { useModal } from "../../context/Modal"; // import modal context
 
 export default function AddToWatchlistModal({ stockId, onClose }) {
   const dispatch = useDispatch();
+  const { closeModal } = useModal();
+  // Use onClose if provided; otherwise fallback to closeModal.
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      closeModal();
+    }
+  };
+
   const watchlists = useSelector((state) => Object.values(state.watchlists));
   const [selectedWatchlist, setSelectedWatchlist] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     dispatch(thunkLoadWatchlists());
   }, [dispatch]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Convert selectedWatchlist and stockId to numbers before dispatching.
+    setErrors({}); // Clear any previous errors
+
     const numericWatchlistId = Number(selectedWatchlist);
     const numericStockId = Number(stockId);
 
     if (!numericWatchlistId || !numericStockId) {
-      // In case conversion fails or no watchlist is selected.
+      setErrors({ general: "Please select a watchlist." });
       return;
     }
 
-    dispatch(thunkAddStockToWatchlist(numericWatchlistId, numericStockId));
-    if (onClose) onClose();
+    try {
+      // Dispatch the thunk to add the stock to the selected watchlist.
+      await dispatch(thunkAddStockToWatchlist(numericWatchlistId, numericStockId));
+      // Unconditionally close the modal on success.
+      handleClose();
+    } catch (err) {
+      // Handle server or network errors
+      if (err && typeof err.json === "function") {
+        try {
+          const errorResponse = await err.json();
+          setErrors(
+            errorResponse.errors ||
+              { general: errorResponse.message || "An error occurred." }
+          );
+        } catch (parseError) {
+          setErrors({ general: "An unexpected error occurred. Please try again." });
+        }
+      } else {
+        console.error("Network or unknown error:", err);
+        setErrors({ general: "A network error occurred. Please try again." });
+      }
+    }
   };
 
   return (
     <div className="add-to-watchlist-modal">
       <h2>Add Stock to Watchlist</h2>
+      {errors.general && <p className="error">{errors.general}</p>}
       <form onSubmit={handleSubmit}>
         <label>Select Watchlist:</label>
         <select
@@ -44,8 +81,9 @@ export default function AddToWatchlistModal({ stockId, onClose }) {
             </option>
           ))}
         </select>
+        {errors.watchlist && <p className="error">{errors.watchlist}</p>}
         <button type="submit">Add</button>
-        <button type="button" onClick={onClose}>
+        <button type="button" onClick={handleClose}>
           Cancel
         </button>
       </form>
