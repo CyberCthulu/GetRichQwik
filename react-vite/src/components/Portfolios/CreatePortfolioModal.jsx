@@ -76,7 +76,7 @@ export default function CreatePortfolioModal({ onClose }) {
             <p className="error">{errors.portfolio_balance}</p>
           )}
         </div>
-        <button type="submit" onClick={onClose}>Create Portfolio</button>
+        <button type="submit">Create Portfolio</button>
         <button type="button" onClick={onClose}>
           Cancel
         </button>

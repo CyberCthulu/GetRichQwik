@@ -1,0 +1,105 @@
+/* src/components/Portfolios/PortfolioList.css */
+
+/* 
+  Page container: black background, white text, 
+  full viewport height, no horizontal scroll on hover scale
+*/
+.portfolios-page {
+    background-color: #000;  /* black background */
+    color: #fff;             /* white text */
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;       /* fill full viewport height */
+    overflow-x: hidden;      /* prevent horizontal scrollbar if scale > 1 */
+  }
+  
+  /* Header with title + plus button */
+  .portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .portfolio-header h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  /* Round green + button, matching watchlists style */
+  .add-portfolio-btn {
+    background-color: green;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .add-portfolio-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+  }
+  
+  /* UL container for the portfolio items, no forced height/scroll */
+  .portfolio-list-container {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Each portfolio item row, similar to .watchlist-item */
+  .portfolio-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: darkslategray;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    padding: 20px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .portfolio-item:hover {
+    transform: scale(1.01);
+    background-color: green;
+  }
+  
+  /* The clickable link portion for the portfolio name/balance */
+  .portfolio-link {
+    color: #fff;            /* ensure text is visible on dark background */
+    text-decoration: none;  /* remove underline */
+  }
+  
+  .portfolio-link h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  
+  .portfolio-link p {
+    margin: 5px 0 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Delete Portfolio button on the right */
+  .delete-portfolio-row-btn {
+    background-color: darkgreen;
+    color: #fff;
+    border: none;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .delete-portfolio-row-btn:hover {
+    background-color: black;
+  }
+  

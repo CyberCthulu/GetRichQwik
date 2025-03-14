@@ -1,0 +1,151 @@
+/* src/components/Watchlists/WatchlistsPage.css */
+
+/* Overall page styling */
+.watchlists-page {
+    background-color: #000; /* Black background */
+    color: #fff;           /* White text */
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;     /* Fill full viewport height */
+
+  }
+  
+  /* Header with title and create button */
+  .watchlists-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .watchlists-header h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  /* Create watchlist (+) button - rectangular now */
+  .create-watchlist-btn {
+    background-color: green;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .create-watchlist-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+
+  }
+  
+  /* Each watchlist item (row) */
+  .watchlist-item {
+    background-color: darkslategray;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    padding: 10px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .watchlist-item:hover {
+    transform: scale(1.01);
+    background-color: green;
+  }
+  
+  /* Watchlist row header: name + toggler + delete button */
+  .watchlist-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Keep toggler + delete button on right */
+  }
+  
+  .watchlist-name {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .watchlist-name h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #fff; /* Ensure text is visible */
+  }
+  
+  .toggle-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  
+  /* Delete watchlist button (X) styling */
+  .delete-watchlist-btn {
+    background-color: darkgreen;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .delete-watchlist-btn:hover {
+    background-color: black;
+  }
+  
+  /* Stocks list within a watchlist */
+  .watchlist-stocks {
+    margin-top: 10px;
+    list-style: none;
+    padding: 0;
+    max-height: 200px; /* Adjust as needed */
+    overflow-y: auto;
+  }
+  
+  /* Each stock item inside a watchlist */
+  .watchlist-stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px; /* Increased padding for better spacing */
+    margin: 10px; /* Adds space above and below */
+    background-color: #000; /* Black background */
+    transition: background-color 0.2s ease;
+  }
+
+  .watchlist-stock-item:hover {
+    background-color: darkslategray;
+  }
+  
+  .watchlist-stock-item span {
+    color: #fff;
+    font-size: 0.95rem;
+  }
+  
+  /* Remove stock button inside each stock item */
+  .remove-stock-btn {
+    background-color: green;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.85rem;
+  }
+  
+  .remove-stock-btn:hover {
+    background-color: black;
+  }
+  

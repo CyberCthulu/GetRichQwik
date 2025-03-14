@@ -1,0 +1,59 @@
+/* OrdersPage.css */
+
+.orders-page {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .orders-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    /* Allow horizontal scrolling on smaller screens if needed */
+    overflow-x: auto;
+  }
+  
+  .orders-card {
+    flex: 1;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    /* Set a maximum height for each card */
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .orders-card h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .order-item {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+  }
+  
+  .order-item:last-child {
+    border-bottom: none;
+  }
+  
+  .order-item p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .order-item button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .order-item button:hover {
+    background-color: #c0392b;
+  }
+  

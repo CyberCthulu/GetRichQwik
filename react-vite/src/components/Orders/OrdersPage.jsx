@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { thunkLoadOrdersForPortfolio, thunkDeleteOrder } from '../../redux/orders';
 import { thunkLoadPortfolios } from '../../redux/portfolios';
+import "./OrdersPage.css";
+
 
 export default function OrdersPage() {
   const dispatch = useDispatch();

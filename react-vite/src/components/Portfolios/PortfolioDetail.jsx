@@ -5,6 +5,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { thunkLoadOnePortfolio, thunkDeletePortfolio } from "../../redux/portfolios";
 import { thunkLoadHoldingsForPortfolio } from "../../redux/holdings";
 import { useModal } from "../../context/Modal";
+import DeletePortfolioModal from "./DeletePortfolioModal";
+import "./PortfolioDetail.css";
 // import BuySellModal from "./BuySellModal";
 
 export default function PortfolioDetail() {
@@ -39,23 +41,25 @@ export default function PortfolioDetail() {
     );
   };
 
-  // Delete portfolio handler
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this portfolio? This action cannot be undone."
+  const openDeleteModal = () => {
+    setModalContent(
+      <DeletePortfolioModal
+        portfolioId={portfolio.id}
+        portfolioName={portfolio.name}
+        onClose={() => setModalContent(null)}
+        onSuccess={() => {
+          // e.g., after it’s deleted, go back to the list
+          navigate("/portfolios");
+        }}
+      />
     );
-    if (confirmed) {
-      await dispatch(thunkDeletePortfolio(id));
-      // After deletion, navigate back to the portfolio list page
-      navigate("/portfolios");
-    }
   };
 
   return (
     <div className="portfolio-detail">
       <div className="portfolio-header">
         <h1>{portfolio.name}</h1>
-        <button onClick={handleDelete} className="delete-portfolio-btn">
+        <button onClick={openDeleteModal} className="delete-portfolio-btn">
           Delete Portfolio
         </button>
       </div>

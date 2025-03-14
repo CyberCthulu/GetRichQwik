@@ -8,11 +8,11 @@ import {
 } from "../../redux/watchlists";
 import { useModal } from "../../context/Modal";
 import RemoveStockConfirmationModal from "./RemoveStockConfirmationModal";
-// Example icons from react-icons
-import { FaCaretUp, FaCaretDown, FaPlus, FaTimes } from "react-icons/fa";
-// import "./WatchlistsPage.css"; // If you have styles
+import CreateWatchlistModal from "./CreateWatchlistModal"; // <-- Import the real component here
+import { FaCaretUp, FaCaretDown, FaPlus } from "react-icons/fa";
+import "./WatchlistsPage.css";
 
-// EXAMPLE: a confirm deletion modal for the watchlist
+// A confirm-deletion modal for the entire watchlist
 function ConfirmWatchlistDeletionModal({ watchlistId, onClose }) {
   const dispatch = useDispatch();
 
@@ -33,63 +33,28 @@ function ConfirmWatchlistDeletionModal({ watchlistId, onClose }) {
   );
 }
 
-// EXAMPLE: a create watchlist modal
-function CreateWatchlistModal({ onClose }) {
-  const dispatch = useDispatch();
-  const [name, setName] = useState("");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // e.g. dispatch a thunk to create the watchlist
-    // then close the modal
-    // await dispatch(thunkCreateWatchlist({ name }));
-    onClose();
-  };
-
-  return (
-    <div className="create-watchlist-modal">
-      <h2>Create New Watchlist</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Watchlist Name:
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </label>
-        <div className="modal-actions">
-          <button type="submit">Create</button>
-          <button onClick={onClose}>Cancel</button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
 export default function WatchlistsPage() {
   const dispatch = useDispatch();
   const watchlists = useSelector((state) => Object.values(state.watchlists));
   const { setModalContent } = useModal();
 
-  // Keep track of which watchlists are expanded
+  // Track expanded/collapsed watchlists
   const [expanded, setExpanded] = useState({});
 
+  // Load all watchlists on mount
   useEffect(() => {
     dispatch(thunkLoadWatchlists());
   }, [dispatch]);
 
-  // Toggle a watchlist open/closed
+  // Expand/collapse a watchlist; if expanding, load its details
   const toggleWatchlist = async (watchlistId) => {
     setExpanded((prev) => ({ ...prev, [watchlistId]: !prev[watchlistId] }));
-    // If we’re expanding, load the full data for that watchlist
     if (!expanded[watchlistId]) {
       await dispatch(thunkLoadOneWatchlist(watchlistId));
     }
   };
 
-  // Show a modal to confirm entire watchlist deletion
+  // Show modal to confirm watchlist deletion
   const handleDeleteWatchlist = (watchlistId) => {
     setModalContent(
       <ConfirmWatchlistDeletionModal
@@ -99,7 +64,7 @@ export default function WatchlistsPage() {
     );
   };
 
-  // Show a modal to remove a single stock
+  // Show modal to remove a single stock from a watchlist
   const handleRemoveStock = (watchlistId, stock) => {
     setModalContent(
       <RemoveStockConfirmationModal
@@ -110,18 +75,13 @@ export default function WatchlistsPage() {
     );
   };
 
-  // Show a modal to create a new watchlist
+  // Show the real CreateWatchlistModal (which calls thunkCreateWatchlist)
   const handleCreateWatchlist = () => {
-    setModalContent(
-      <CreateWatchlistModal
-        onClose={() => setModalContent(null)}
-      />
-    );
+    setModalContent(<CreateWatchlistModal onClose={() => setModalContent(null)} />);
   };
 
   return (
     <div className="watchlists-page">
-      {/* Header with “My Watchlists” and a “+” button */}
       <div className="watchlists-header">
         <h1>My Watchlists</h1>
         <button className="create-watchlist-btn" onClick={handleCreateWatchlist}>
@@ -135,24 +95,26 @@ export default function WatchlistsPage() {
         watchlists.map((wl) => (
           <div key={wl.id} className="watchlist-item">
             <div className="watchlist-header">
-              {/* Title + caret toggler */}
-              <div className="watchlist-name" onClick={() => toggleWatchlist(wl.id)}>
-                <h2>{wl.name}</h2>
-                <button className="toggle-button">
+              {/* Watchlist name on the left */}
+              <h2 className="watchlist-name">{wl.name}</h2>
+
+              {/* Delete & toggle on the right */}
+              <div className="watchlist-actions">
+                <button
+                  className="delete-watchlist-btn"
+                  onClick={() => handleDeleteWatchlist(wl.id)}
+                >
+                  Delete Watchlist
+                </button>
+                <button
+                  className="toggle-button"
+                  onClick={() => toggleWatchlist(wl.id)}
+                >
                   {expanded[wl.id] ? <FaCaretUp /> : <FaCaretDown />}
                 </button>
               </div>
-
-              {/* X button to delete entire watchlist */}
-              <button
-                className="delete-watchlist-btn"
-                onClick={() => handleDeleteWatchlist(wl.id)}
-              >
-                <FaTimes />
-              </button>
             </div>
 
-            {/* Expand/collapse the watchlist’s stocks */}
             {expanded[wl.id] && (
               <ul className="watchlist-stocks">
                 {wl.stocks && wl.stocks.length > 0 ? (

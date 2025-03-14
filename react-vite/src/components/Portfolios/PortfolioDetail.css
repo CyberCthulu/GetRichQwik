@@ -1,0 +1,95 @@
+/* src/components/Portfolios/PortfolioDetail.css */
+
+.portfolio-detail {
+    background-color: darkslategray;
+    padding: 20px;
+    max-width: 800px;
+    min-height: 100vh;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+  
+  .portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .portfolio-header h1 {
+    font-size: 2rem;
+    margin: 0;
+  }
+  
+  .delete-portfolio-btn {
+    background-color: darkgreen;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .delete-portfolio-btn:hover {
+    background-color: green;
+  }
+  
+  .portfolio-balance {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .holdings {
+    padding: 0;
+    margin: 0;
+    max-height: 400px; /* scroll if many holdings */
+    overflow-y: auto;
+  }
+
+  .holding-item:hover {
+    background-color: darkgreen;
+  }
+
+
+  
+  .holding-item {
+    list-style: none;
+    background-color: black;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease;
+  }
+  
+  .holding-item p {
+    margin: 5px 0;
+  }
+  
+  .holding-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .holding-actions button {
+    background-color: green;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .holding-actions button:hover {
+    background-color: black;
+  }
+  
