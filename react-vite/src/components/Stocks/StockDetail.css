@@ -1,0 +1,159 @@
+/* Overall page container */
+.stock-detail {
+    background-color: #000;   /* black background */
+    color: white;             /* white text */
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+  }
+  
+  /* Top header row: left info (ticker/company/sector), right info (price) */
+  .stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .left-info h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  .left-info p {
+    margin: 5px 0 0;
+    font-size: 1rem;
+    color: white;
+  }
+  
+  .right-info p {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+  
+  /* Main content: chart on the left, buy card on the right */
+  .main-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    /* 
+      If you want the chart to be bigger, 
+      you can tweak the flex-basis or use a ratio 
+    */
+  }
+  
+  /* Chart section on the left */
+  .chart-section {
+    flex: 0 1 60%;          /* ~60% of width */
+    background-color: darkslategray;
+    padding: 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .chart-section:hover {
+    background-color: #333;
+    transform: scale(1.05);
+  }
+  
+  /* Time range buttons at bottom of chart */
+  .time-range-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* wrap if not enough space */
+    gap: 8px;
+  }
+  
+  .time-range-buttons button {
+    background-color: green;
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .time-range-buttons button:hover {
+    background-color: black;
+  }
+  
+  .time-range-buttons .active-range {
+    background-color: black; 
+    border: 1px solid white;
+  }
+  
+  /* Buy stock card on the right */
+  .buy-stock-card {
+    flex: 0 1 30%;           /* ~40% of width */
+    background-color: darkslategray;
+    padding: 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  
+  .buy-stock-card-buttons {
+    display: flex;
+    width: 100%; /* Ensure full-width alignment */
+    margin-top: 12px; /* Space between text and buttons */
+  }
+
+  .buy-stock-card:hover {
+    background-color: darkgreen;
+    transform: scale(1.01);
+  }
+  
+  .buy-stock-card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    padding-bottom: 20px;
+    text-align: center; /* Explicitly center text */
+
+  }
+  
+  .buy-stock-card p {
+    margin: 8px 0;
+    font-size: 1rem;
+    padding-bottom: 15px;
+    color: #ccc;
+  }
+
+
+  .buy-stock-card button {
+    justify-content: space-evenly;
+  }
+
+  .buy-stock-card button {
+    background-color: green;
+    border: none;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+  }
+  
+  .buy-stock-card button:hover {
+    background-color: black;
+  }
+  
+  /* Responsive for smaller screens */
+  @media (max-width: 768px) {
+    .stock-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .main-content {
+      flex-direction: column;
+    }
+  
+    .chart-section, 
+    .buy-stock-card {
+      flex: 0 1 100%;
+    }
+  }
+  

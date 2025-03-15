@@ -43,64 +43,39 @@ def get_portfolios():
 @portfolio_routes.route('/', methods=['POST'])
 @login_required
 def create_portfolio():
-    """
-    Creates a new portfolio for the logged-in user.
-    Funds allocated to the portfolio are drawn from the user's cash_balance.
-    ---
-    Request Body:
-      {
-        "name": "Investment Portfolio",
-        "portfolio_balance": 100000.00
-      }
-    Successful Response:
-      - Status Code: 201
-      - Body:
-        {
-          "portfolio": {
-            "id": 3,
-            "user_id": 1,
-            "name": "Investment Portfolio",
-            "portfolio_balance": 100000.00,
-            "holdings": [],
-            "orders": [],
-            "created_at": "2025-02-01T10:00:00",
-            "updated_at": "2025-02-01T10:00:00"
-          }
-        }
-    Error Response (Validation Errors):
-      - Status Code: 400
-      - Body: { "message": "Validation error", "errors": { ... } }
-    """
     data = request.get_json()
     name = data.get("name")
-    portfolio_balance = data.get("portfolio_balance")
+    portfolio_balance = data.get("portfolio_balance", 0)
 
     errors = {}
     if not name:
         errors["name"] = "Portfolio name is required"
-    if portfolio_balance is None or portfolio_balance < 0:
+    if portfolio_balance < 0:
         errors["portfolio_balance"] = "Portfolio balance must be a non-negative number"
-
     if errors:
         return jsonify({"message": "Validation error", "errors": errors}), 400
 
-    # Check if the user has enough cash_balance to load funds
+    # Check if the user has enough total cash_balance to fund this portfolio:
     if current_user.cash_balance < portfolio_balance:
         return jsonify({"message": "Insufficient funds in user's cash balance"}), 400
 
-    # Create the portfolio
+    # Create the portfolio AND set initial_investment to match the amount funded:
     portfolio = Portfolio(
         user_id=current_user.id,
         name=name,
         portfolio_balance=portfolio_balance,
+        initial_investment=portfolio_balance,  # <-- Set it here
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
     db.session.add(portfolio)
-    # Deduct the funds from the user's cash_balance
+
+    # Deduct the funds from the user's overall cash balance
     current_user.cash_balance -= portfolio_balance
     db.session.commit()
+
     return jsonify({"portfolio": portfolio.to_dict()}), 201
+
 
 @portfolio_routes.route('/<int:id>', methods=['PUT'])
 @login_required

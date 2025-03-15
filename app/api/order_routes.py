@@ -1,53 +1,37 @@
+from decimal import Decimal
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from datetime import datetime
-from app.models import Order, Portfolio, db, OrderTypeEnum, OrderStatusEnum
+from app.models import Order, Portfolio, db, OrderTypeEnum, OrderStatusEnum, Holding, Stock
+from app.jobs.is_market_open import is_market_open_now
 
 order_routes = Blueprint('orders', __name__)
 
-@order_routes.route('', methods=['POST'])
+@order_routes.route("", methods=["POST"])
 @login_required
 def create_order():
-    """
-    Creates a new order (buy or sell) for a portfolio.
-    Expects a JSON body with:
-      {
-        "portfolio_id": 1,
-        "stock_id": 1,
-        "order_type": "buy",
-        "quantity": 5.0,
-        "target_price": null,
-        "scheduled_time": null
-      }
-    Successful Response:
-      - Status Code: 201
-      - Body: { "order": { ... order details ... } }
-    Error Response (Validation Errors):
-      - Status Code: 400
-      - Body: { "message": "Validation error", "errors": { ... } }
-    """
     data = request.get_json() or {}
     errors = {}
-    
-    # Validate required fields
+
+    # Validate required fields.
     if not data.get("portfolio_id"):
-        errors["portfolio_id"] = "Portfolio ID is required"
+        errors["portfolio_id"] = "Portfolio ID is required."
     if not data.get("stock_id"):
-        errors["stock_id"] = "Stock ID is required"
+        errors["stock_id"] = "Stock ID is required."
     if not data.get("order_type") or data.get("order_type") not in ["buy", "sell"]:
-        errors["order_type"] = "Order type must be either 'buy' or 'sell'"
+        errors["order_type"] = "Order type must be either 'buy' or 'sell'."
     if not data.get("quantity") or data.get("quantity") <= 0:
-        errors["quantity"] = "Quantity must be a positive number"
-    
+        errors["quantity"] = "Quantity must be a positive number."
+
     if errors:
         return jsonify({"message": "Validation error", "errors": errors}), 400
 
-    # Check if the portfolio belongs to the current user.
+    # Ensure the portfolio belongs to the current user.
     portfolio = Portfolio.query.get(data["portfolio_id"])
     if not portfolio or portfolio.user_id != current_user.id:
         return jsonify({"message": "Forbidden"}), 403
 
-    # For scheduled_time, if provided, parse it from ISO format.
+    # Parse scheduled_time if provided.
     scheduled_time = None
     if data.get("scheduled_time"):
         try:
@@ -56,7 +40,7 @@ def create_order():
             errors["scheduled_time"] = "Invalid scheduled_time format. Must be ISO 8601."
             return jsonify({"message": "Validation error", "errors": errors}), 400
 
-    # Create the order.
+    # Create the order with initial pending status.
     order = Order(
         portfolio_id=data["portfolio_id"],
         stock_id=data["stock_id"],
@@ -69,9 +53,76 @@ def create_order():
         updated_at=datetime.utcnow()
     )
     db.session.add(order)
-    db.session.commit()
 
+    # Determine if this is an immediate order:
+    immediate = (data.get("target_price") is None) and (scheduled_time is None)
+    if immediate:
+        # Check if the market is open.
+        if not is_market_open_now():
+            return jsonify({"message": "Market is closed. Order not executed."}), 400
+
+        # Retrieve the current stock data.
+        stock_obj = Stock.query.get(data["stock_id"])
+        if not stock_obj:
+            return jsonify({"message": "Stock not found"}), 404
+
+        fill_price = stock_obj.market_price  # Use current market price
+
+        # Use Decimal arithmetic for accuracy.
+        quantity_decimal = Decimal(str(data["quantity"]))
+        fill_price_decimal = Decimal(str(fill_price))
+        cost = quantity_decimal * fill_price_decimal
+        now = datetime.utcnow()
+
+        if data["order_type"] == "buy":
+            # Check if the portfolio has enough funds.
+            if portfolio.portfolio_balance < cost:
+                return jsonify({"message": "Insufficient funds in portfolio"}), 400
+
+            # Execute order.
+            order.status = OrderStatusEnum.executed
+            order.executed_price = fill_price
+            order.executed_at = now
+
+            # **Deduct funds from the portfolio balance only**
+            portfolio.portfolio_balance -= cost
+
+            # Update holdings.
+            holding = Holding.query.filter_by(
+                portfolio_id=portfolio.id, stock_id=data["stock_id"]
+            ).first()
+            if holding:
+                holding.quantity += quantity_decimal
+            else:
+                new_holding = Holding(
+                    portfolio_id=portfolio.id,
+                    stock_id=data["stock_id"],
+                    quantity=quantity_decimal,
+                    created_at=now,
+                    updated_at=now
+                )
+                db.session.add(new_holding)
+        elif data["order_type"] == "sell":
+            holding = Holding.query.filter_by(
+                portfolio_id=portfolio.id, stock_id=data["stock_id"]
+            ).first()
+            if not holding or holding.quantity < quantity_decimal:
+                return jsonify({"message": "Not enough shares to sell"}), 400
+
+            order.status = OrderStatusEnum.executed
+            order.executed_price = fill_price
+            order.executed_at = now
+
+            proceeds = quantity_decimal * fill_price_decimal
+            portfolio.portfolio_balance += proceeds
+            holding.quantity -= quantity_decimal
+        else:
+            return jsonify({"message": "Invalid order type"}), 400
+
+    db.session.commit()
     return jsonify({"order": order.to_dict()}), 201
+
+
 
 
 @order_routes.route('/<int:order_id>', methods=['PUT'])
@@ -143,3 +194,11 @@ def delete_order(order_id):
     }), 200
 
 
+@order_routes.route('', methods=['GET'])
+@login_required
+def get_all_orders_for_user():
+    user_id = current_user.id
+    # Query for all orders from all portfolios belonging to this user
+    orders = Order.query.join(Portfolio).filter(Portfolio.user_id == user_id).all()
+    
+    return jsonify([order.to_dict() for order in orders])

@@ -5,6 +5,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { thunkLoadOnePortfolio, thunkDeletePortfolio } from "../../redux/portfolios";
 import { thunkLoadHoldingsForPortfolio } from "../../redux/holdings";
 import { useModal } from "../../context/Modal";
+import DeletePortfolioModal from "./DeletePortfolioModal";
+import "./PortfolioDetail.css";
 // import BuySellModal from "./BuySellModal";
 
 export default function PortfolioDetail() {
@@ -21,9 +23,19 @@ export default function PortfolioDetail() {
     )
   );
 
+  // Initial load on mount
   useEffect(() => {
     dispatch(thunkLoadOnePortfolio(id));
     dispatch(thunkLoadHoldingsForPortfolio(id));
+  }, [dispatch, id]);
+
+  // Poll for updates every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadOnePortfolio(id));
+      dispatch(thunkLoadHoldingsForPortfolio(id));
+    }, 1500); // adjust the interval as needed (30000ms = 30 seconds)
+    return () => clearInterval(intervalId);
   }, [dispatch, id]);
 
   if (!portfolio) return <p>Loading portfolio...</p>;
@@ -39,30 +51,32 @@ export default function PortfolioDetail() {
     );
   };
 
-  // Delete portfolio handler
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this portfolio? This action cannot be undone."
+  const openDeleteModal = () => {
+    setModalContent(
+      <DeletePortfolioModal
+        portfolioId={portfolio.id}
+        portfolioName={portfolio.name}
+        onClose={() => setModalContent(null)}
+        onSuccess={() => {
+          // e.g., after it’s deleted, go back to the list
+          navigate("/portfolios");
+        }}
+      />
     );
-    if (confirmed) {
-      await dispatch(thunkDeletePortfolio(id));
-      // After deletion, navigate back to the portfolio list page
-      navigate("/portfolios");
-    }
   };
 
   return (
     <div className="portfolio-detail">
       <div className="portfolio-header">
         <h1>{portfolio.name}</h1>
-        <button onClick={handleDelete} className="delete-portfolio-btn">
+        <button onClick={openDeleteModal} className="delete-portfolio-btn">
           Delete Portfolio
         </button>
       </div>
-      <p>
-        Portfolio Balance: ${portfolio.portfolio_balance.toFixed(2)}
-      </p>
-      
+      <p>Total Portfolio Value: ${portfolio.portfolio_value.toFixed(2)}</p>
+      <p>Portfolio Balance: ${portfolio.portfolio_balance.toFixed(2)}</p>
+      <p>Gains/Losses: ${Number(portfolio.gains_loss).toFixed(2)}</p>
+
       <h2>Holdings</h2>
       {holdings.length === 0 ? (
         <p>No holdings available in this portfolio.</p>
@@ -83,7 +97,10 @@ export default function PortfolioDetail() {
                 <strong>Quantity:</strong> {holding.quantity}
               </p>
               <p>
-                <strong>Current Price:</strong> ${holding.stock ? Number(holding.stock.market_price).toFixed(2) : "N/A"}
+                <strong>Current Price:</strong> $
+                {holding.stock
+                  ? Number(holding.stock.market_price).toFixed(2)
+                  : "N/A"}
               </p>
               <div className="holding-actions">
                 <button onClick={() => openBuySellModal(holding, "buy")}>

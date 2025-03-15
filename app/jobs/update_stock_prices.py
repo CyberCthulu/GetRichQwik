@@ -1,8 +1,7 @@
-# app/jobs/update_stock_prices.py
 import os
 from datetime import datetime
 from app.models import db, Stock
-from app.services.finnhub_api import finnhub_client  # finnhub-python client
+import finnhub  # Import the finnhub package directly
 from flask import current_app
 
 def update_stock_prices():
@@ -17,8 +16,11 @@ def update_stock_prices():
         now = datetime.utcnow()
         for stock in stocks:
             try:
-                # finnhub_client.quote returns a dict; "c" is the current price.
-                quote = finnhub_client.quote(stock.ticker_symbol)
+                # Reinitialize the client for each call to avoid caching issues.
+                api_key = os.getenv("FINNHUB_API_KEY")
+                client = finnhub.Client(api_key=api_key)
+                quote = client.quote(stock.ticker_symbol)
+                print(f"Quote for {stock.ticker_symbol}: {quote}")  # Debug output
                 current_price = quote.get("c")
                 if current_price is not None:
                     stock.market_price = current_price

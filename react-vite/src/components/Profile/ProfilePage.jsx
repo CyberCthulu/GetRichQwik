@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useModal } from "../../context/Modal";
 import UpdateProfileModal from "./UpdateProfileModal";
 import UpdateCashBalanceModal from "./UpdateCashBalanceModal.jsx";
-// import "./ProfilePage.css"; // For styling
+import "./ProfilePage.css"; 
 
 export default function ProfilePage() {
   const user = useSelector((state) => state.session.user);

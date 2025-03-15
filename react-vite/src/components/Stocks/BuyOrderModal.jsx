@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { thunkCreateOrder } from "../../redux/orders";
 import { thunkLoadPortfolios } from "../../redux/portfolios";
+import { useModal } from "../../context/Modal";  // Import the modal context
 
 export default function BuyOrderModal({ stockId, onClose }) {
   const dispatch = useDispatch();
@@ -10,7 +11,18 @@ export default function BuyOrderModal({ stockId, onClose }) {
   const [isLimitOrder, setIsLimitOrder] = useState(false);
   const [limitPrice, setLimitPrice] = useState("");
   const [selectedPortfolio, setSelectedPortfolio] = useState("");
-  
+
+  // Get the closeModal function from our modal context
+  const { closeModal } = useModal();
+  // Use the passed onClose prop if available; otherwise fallback to closeModal.
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      closeModal();
+    }
+  };
+
   // Get portfolios and session user from Redux
   const portfolios = useSelector((state) => Object.values(state.portfolios));
   const sessionUser = useSelector((state) => state.session.user);
@@ -30,20 +42,24 @@ export default function BuyOrderModal({ stockId, onClose }) {
       return;
     }
 
-    // Construct payload:
-    // Always use "buy" for order_type.
+    // Construct payload: Always use "buy" for order_type.
     const payload = {
       portfolio_id: Number(selectedPortfolio),
       stock_id: Number(stockId),
-      order_type: "buy", 
+      order_type: "buy",
       quantity: parseFloat(quantity),
       target_price: isLimitOrder ? parseFloat(limitPrice) : null,
       scheduled_time: null, // Extend as needed
     };
 
-    const newOrder = await dispatch(thunkCreateOrder(payload));
-    if (newOrder) {
-      if (onClose) onClose();
+    try {
+      // Dispatch the order creation thunk.
+      await dispatch(thunkCreateOrder(payload));
+      // Close the modal after a successful order.
+      handleClose();
+    } catch (error) {
+      console.error("Order creation error:", error);
+      // Optionally add error handling here.
     }
   };
 
@@ -97,7 +113,7 @@ export default function BuyOrderModal({ stockId, onClose }) {
         </select>
 
         <button type="submit">Place Order</button>
-        <button type="button" onClick={onClose}>
+        <button type="button" onClick={handleClose}>
           Cancel
         </button>
       </form>

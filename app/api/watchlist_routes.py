@@ -126,3 +126,18 @@ def get_watchlist(watchlist_id):
     if watchlist.user_id != current_user.id:
         return jsonify({"message": "Forbidden"}), 403
     return jsonify({"watchlist": watchlist.to_dict()}), 200
+
+@watchlist_routes.route('/<int:watchlist_id>', methods=['DELETE'])
+@login_required
+def delete_watchlist(watchlist_id):
+    """
+    Deletes an entire watchlist for the current user.
+    """
+    watchlist = Watchlist.query.get_or_404(watchlist_id)
+    if watchlist.user_id != current_user.id:
+        return jsonify({"message": "Forbidden"}), 403
+
+    db.session.delete(watchlist)
+    db.session.commit()
+    return jsonify({"message": "Watchlist deleted successfully"}), 200
+

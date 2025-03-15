@@ -1,0 +1,193 @@
+/* ------------------------------------------------
+   RESET & BOX-SIZING
+   ------------------------------------------------ */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* ------------------------------------------------
+     BODY STYLING
+     ------------------------------------------------ */
+  body {
+    background-color: #000; /* Black background (Robinhood's dark mode style) */
+    font-family: Arial, sans-serif;
+    color: #fff;
+    line-height: 1.4;
+  }
+  
+  /* ------------------------------------------------
+     DASHBOARD CONTAINER
+     ------------------------------------------------ */
+  .dashboard {
+    /* Center and constrain overall width */
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Optional if you want a slight dark overlay behind everything:
+       background-color: #111; 
+    */
+  }
+  
+  /* ------------------------------------------------
+     DASHBOARD TITLE
+     ------------------------------------------------ */
+  .dashboard h1 {
+    font-size: 2rem;
+    margin: 10px;
+    /* Keep text left-aligned to mimic Robinhood’s style */
+    text-align: left;
+  }
+  
+  /* ------------------------------------------------
+     MAIN CONTENT: TWO COLUMNS
+     ------------------------------------------------ */
+  .dashboard-main-content {
+    display: flex;
+    gap: 16px; /* smaller gap than 20px for a tighter feel */
+  }
+  
+  /* ------------------------------------------------
+     LEFT COLUMN: CHART SECTION
+     ------------------------------------------------ */
+  .dashboard-chart-section {
+    flex: 1; /* fill available space equally with the right column */
+    background-color: #1a1a1a; /* a bit lighter than pure black for contrast */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    min-height: 300px;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .dashboard-chart-section:hover {
+    background-color: #2a2a2a; /* subtle hover effect */
+  }
+  
+  .dashboard-chart-section h2 {
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 1.2rem;
+  }
+  
+  /* Time Range Buttons */
+  .time-range-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+  }
+  
+  .time-range-buttons button {
+    background-color: #006400;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+  }
+  
+  .time-range-buttons button:hover {
+    background-color: #004700;
+  }
+  
+  .time-range-buttons .active-range {
+    background-color: #003300;
+    border: 1px solid #0f0; /* subtle highlight */
+  }
+  
+  /* ------------------------------------------------
+     RIGHT COLUMN: CARDS COLUMN
+     ------------------------------------------------ */
+  .dashboard-cards-column {
+    flex: 1; /* fill available space */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* ------------------------------------------------
+     INDIVIDUAL CARD STYLING
+     ------------------------------------------------ */
+  .stocks-card,
+  .watchlists-card {
+    background-color: darkslategray;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .watchlists-card h3 a {
+    text-decoration: none;
+  }
+
+
+
+
+  .watchlist-header button:hover {
+    background-color: black;
+  }
+  
+  .stocks-card:hover,
+  .watchlists-card:hover {
+    background-color: #2a2a2a; /* subtle hover effect */
+  }
+  
+  .stocks-card h3,
+  .watchlists-card h3 {
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 1.1rem;
+  }
+  
+  /* Stock Items */
+  .stock-item {
+    background-color: #000; 
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+  }
+  
+  .stock-item:hover {
+    background-color: #006400;
+    border: 1px solid #333;
+  }
+  
+  /* Watchlist Items */
+  .watchlists-card .watchlist-item {
+    background-color: #000;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    border-radius: 4px;
+    padding: 8px;
+  }
+  
+  .watchlist-item ul {
+    list-style: none;
+  }
+  
+  .watchlist-item li {
+    margin: 5px 0;
+  }
+  
+  /* ------------------------------------------------
+     RESPONSIVE STYLES
+     ------------------------------------------------ */
+  @media (max-width: 768px) {
+    .dashboard-main-content {
+      flex-direction: column;
+    }
+  
+    /* Make each section full-width in mobile */
+    .dashboard-chart-section,
+    .dashboard-cards-column {
+      flex: none;
+      width: 100%;
+    }
+  }
+  

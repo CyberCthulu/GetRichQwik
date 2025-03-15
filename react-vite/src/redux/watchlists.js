@@ -37,7 +37,7 @@ export const thunkLoadWatchlists = () => async (dispatch) => {
 
 // POST create watchlist
 export const thunkCreateWatchlist = (payload) => async (dispatch) => {
-  const res = await csrfFetch("/api/watchlists", {
+  const res = await csrfFetch("/api/watchlists/", {
     method: "POST",
     body: JSON.stringify(payload),
   });

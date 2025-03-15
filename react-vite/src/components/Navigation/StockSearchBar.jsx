@@ -1,6 +1,7 @@
 // src/components/Navigation/StockSearchBar.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+// Make sure this path is correct for your project structure.
 import { csrfFetch } from "../../redux/csrf";
 
 export default function StockSearchBar() {
@@ -8,7 +9,7 @@ export default function StockSearchBar() {
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  // Debounce the search so that the API is called only after 300ms of inactivity
+  // Debounce search so that API is called only after 300ms of inactivity.
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (query.trim()) {
@@ -21,16 +22,16 @@ export default function StockSearchBar() {
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
-  // This endpoint should now only search within the seeded stocks in your database.
+  // Fetch suggestions using the new Flask endpoint.
   const fetchSuggestions = async (q) => {
     try {
-      const queryTrimmed = q.trim();
+      const trimmedQuery = q.trim();
       const res = await csrfFetch(
-        `/api/stocks/search?q=${encodeURIComponent(queryTrimmed)}`
+        `/api/stocks/search?q=${encodeURIComponent(trimmedQuery)}`
       );
       if (res.ok) {
         const data = await res.json();
-        // data.stocks will come solely from your seeded stocks
+        // data.stocks comes from your seeded database.
         setResults(data.stocks || []);
       } else {
         setResults([]);
@@ -42,7 +43,7 @@ export default function StockSearchBar() {
   };
 
   const handleResultClick = (stock) => {
-    // Use the numeric id if available; otherwise, fallback to the ticker symbol.
+    // Navigate using the numeric id if available.
     const target = stock.id ? stock.id : stock.ticker_symbol;
     navigate(`/stocks/${target}`);
     setQuery("");
@@ -51,9 +52,11 @@ export default function StockSearchBar() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // If exactly one result, navigate to its detail page.
     if (results.length === 1) {
       handleResultClick(results[0]);
     } else if (query.trim()) {
+      // Otherwise, navigate to a search results page.
       navigate(`/stocks?query=${encodeURIComponent(query.trim())}`);
     }
   };
