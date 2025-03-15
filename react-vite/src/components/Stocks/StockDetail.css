@@ -1,7 +1,7 @@
 /* Overall page container */
 .stock-detail {
     background-color: #000;   /* black background */
-    color: #fff;             /* white text */
+    color: white;             /* white text */
     padding: 20px;
     font-family: Arial, sans-serif;
     min-height: 100vh;
@@ -23,7 +23,7 @@
   .left-info p {
     margin: 5px 0 0;
     font-size: 1rem;
-    color: #ccc;
+    color: white;
   }
   
   .right-info p {
@@ -45,14 +45,14 @@
   /* Chart section on the left */
   .chart-section {
     flex: 0 1 60%;          /* ~60% of width */
-    background-color: #1c1c1c;
+    background-color: darkslategray;
     padding: 20px;
     border-radius: 8px;
     transition: background-color 0.2s, transform 0.2s;
   }
   .chart-section:hover {
-    background-color: #2c2c2c;
-    transform: scale(1.01);
+    background-color: #333;
+    transform: scale(1.05);
   }
   
   /* Time range buttons at bottom of chart */
@@ -75,25 +75,31 @@
   }
   
   .time-range-buttons button:hover {
-    background-color: darkgreen;
+    background-color: black;
   }
   
   .time-range-buttons .active-range {
-    background-color: #000; 
-    border: 1px solid green;
+    background-color: black; 
+    border: 1px solid white;
   }
   
   /* Buy stock card on the right */
   .buy-stock-card {
     flex: 0 1 30%;           /* ~40% of width */
-    background-color: #1c1c1c;
+    background-color: darkslategray;
     padding: 20px;
     border-radius: 8px;
     transition: background-color 0.2s, transform 0.2s;
   }
   
+  .buy-stock-card-buttons {
+    display: flex;
+    width: 100%; /* Ensure full-width alignment */
+    margin-top: 12px; /* Space between text and buttons */
+  }
+
   .buy-stock-card:hover {
-    background-color: #2c2c2c;
+    background-color: darkgreen;
     transform: scale(1.01);
   }
   
@@ -112,13 +118,11 @@
     color: #ccc;
   }
 
-  .buy-stock-card .button-container {
-    display: flex;
-    justify-content: space-evenly; /* Ensures buttons are evenly spaced */
-    width: 100%; /* Ensures buttons are spread across the full width */
-    margin-top: 10px; /* Adds space above buttons */
+
+  .buy-stock-card button {
+    justify-content: space-evenly;
   }
-  
+
   .buy-stock-card button {
     background-color: green;
     border: none;
@@ -132,7 +136,7 @@
   }
   
   .buy-stock-card button:hover {
-    background-color: darkgreen;
+    background-color: black;
   }
   
   /* Responsive for smaller screens */

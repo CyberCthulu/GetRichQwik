@@ -52,3 +52,28 @@ def get_stock_details(stock_id):
         return jsonify({"message": "Stock not found"}), 404
     return jsonify({"stock": stock.to_dict()}), 200
 
+@stock_routes.route('/recent', methods=['GET'])
+def get_recent_stocks():
+    """
+    Retrieves a list of recently searched stocks for the current user.
+    For this example, we're using the Flask session to store recently searched stock IDs.
+    Response:
+      {
+        "stocks": [
+          { "id": 1, "ticker_symbol": "AAPL", "company_name": "Apple Inc.", ... },
+          ...
+        ]
+      }
+    """
+    recent_ids = session.get("recent_stock_ids", [])
+    if not recent_ids:
+        return jsonify({"stocks": []}), 200
+
+    # Query stocks based on the list of recent IDs.
+    stocks = Stock.query.filter(Stock.id.in_(recent_ids)).all()
+    # Create a dictionary keyed by ID for ordering.
+    stocks_dict = {stock.id: stock for stock in stocks}
+    # Order the stocks as stored in the session.
+    ordered_stocks = [stocks_dict[stock_id] for stock_id in recent_ids if stock_id in stocks_dict]
+
+    return jsonify({"stocks": [stock.to_dict() for stock in ordered_stocks]}), 200

@@ -18,11 +18,16 @@
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: darkslategray;
     /* Set a maximum height for each card */
     max-height: 600px;
     overflow-y: auto;
   }
+
+  .orders-card:hover {
+    background-color: darkgreen;
+  }
+
   
   .orders-card h2 {
     text-align: center;
@@ -30,6 +35,12 @@
   }
   
   .order-item {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+  }
+
+  .order-item:hover {
+    background-color: green;
     border-bottom: 1px solid #ccc;
     padding: 10px 0;
   }
@@ -46,14 +57,12 @@
   .order-item button {
     margin-top: 10px;
     padding: 5px 10px;
-    background-color: #e74c3c;
-    color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
   }
   
   .order-item button:hover {
-    background-color: #c0392b;
+    background-color: black;
   }
   

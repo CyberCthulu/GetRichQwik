@@ -23,9 +23,19 @@ export default function PortfolioDetail() {
     )
   );
 
+  // Initial load on mount
   useEffect(() => {
     dispatch(thunkLoadOnePortfolio(id));
     dispatch(thunkLoadHoldingsForPortfolio(id));
+  }, [dispatch, id]);
+
+  // Poll for updates every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadOnePortfolio(id));
+      dispatch(thunkLoadHoldingsForPortfolio(id));
+    }, 1500); // adjust the interval as needed (30000ms = 30 seconds)
+    return () => clearInterval(intervalId);
   }, [dispatch, id]);
 
   if (!portfolio) return <p>Loading portfolio...</p>;
@@ -63,10 +73,10 @@ export default function PortfolioDetail() {
           Delete Portfolio
         </button>
       </div>
-      <p>
-        Portfolio Balance: ${portfolio.portfolio_balance.toFixed(2)}
-      </p>
-      
+      <p>Total Portfolio Value: ${portfolio.portfolio_value.toFixed(2)}</p>
+      <p>Portfolio Balance: ${portfolio.portfolio_balance.toFixed(2)}</p>
+      <p>Gains/Losses: ${Number(portfolio.gains_loss).toFixed(2)}</p>
+
       <h2>Holdings</h2>
       {holdings.length === 0 ? (
         <p>No holdings available in this portfolio.</p>
@@ -87,7 +97,10 @@ export default function PortfolioDetail() {
                 <strong>Quantity:</strong> {holding.quantity}
               </p>
               <p>
-                <strong>Current Price:</strong> ${holding.stock ? Number(holding.stock.market_price).toFixed(2) : "N/A"}
+                <strong>Current Price:</strong> $
+                {holding.stock
+                  ? Number(holding.stock.market_price).toFixed(2)
+                  : "N/A"}
               </p>
               <div className="holding-actions">
                 <button onClick={() => openBuySellModal(holding, "buy")}>

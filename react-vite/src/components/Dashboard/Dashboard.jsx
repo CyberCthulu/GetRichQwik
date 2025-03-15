@@ -1,6 +1,7 @@
 // src/components/Dashboard/Dashboard.jsx
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -28,50 +29,33 @@ ChartJS.register(
 import { thunkLoadWatchlists } from "../../redux/watchlists";
 import { thunkLoadPortfolios } from "../../redux/portfolios";
 
-// If you have a thunk to load recent stocks, import that too:
-// import { thunkLoadRecentStocks } from "../../redux/stocks";
+// Import CSS
+import "./Dashboard.css";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
 
-  // Get watchlists and portfolios from Redux
-  const watchlists = useSelector((state) =>
-    Object.values(state.watchlists)
-  );
-  const portfolios = useSelector((state) =>
-    Object.values(state.portfolios)
-  );
-
-  // For recent stocks, assume it's stored under state.stocks.recent.
-  // If not present, simulate with an empty array.
+  // Get data from Redux
+  const watchlists = useSelector((state) => Object.values(state.watchlists));
+  const portfolios = useSelector((state) => Object.values(state.portfolios));
   const recentStocks = useSelector((state) => state.stocks.recent) || [
-    // Simulation: Remove this once you have real data
-    {
-      id: 1,
-      ticker_symbol: "AAPL",
-      company_name: "Apple Inc.",
-    },
-    {
-      id: 2,
-      ticker_symbol: "MSFT",
-      company_name: "Microsoft Corporation",
-    },
-    {
-      id: 3,
-      ticker_symbol: "GOOGL",
-      company_name: "Alphabet Inc.",
-    },
+    { id: 1, ticker_symbol: "AAPL", company_name: "Apple Inc." },
+    { id: 2, ticker_symbol: "MSFT", company_name: "Microsoft Corporation" },
+    { id: 3, ticker_symbol: "GOOGL", company_name: "Alphabet Inc." },
   ];
 
-  // Local state for the selected time range and chart data
+  // Local state for chart data, time range, and watchlist expansion
   const [timeRange, setTimeRange] = useState("1D");
   const [chartData, setChartData] = useState([]);
+  const [expanded, setExpanded] = useState({});
+
+  // Toggle expansion for a specific watchlist
+  const toggleWatchlist = (id) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Simulated function to generate chart data based on the time range.
-  // In production, you might dispatch a thunk that computes aggregated portfolio value.
   const generateSimulatedChartData = (range) => {
-    // In a real scenario, you might compute the total portfolio value using portfolios and holdings.
-    // For simulation, we'll create 7 data points.
     const labels = [
       "2025-03-01",
       "2025-03-02",
@@ -83,22 +67,18 @@ export default function Dashboard() {
     ];
     return labels.map((label) => ({
       date: label,
-      // Simulate a value between 10000 and 30000 (could represent total portfolio value)
       value: Math.floor(Math.random() * 20000) + 10000,
     }));
   };
 
-  // On component mount, load watchlists and portfolios.
+  // Load data on component mount
   useEffect(() => {
     dispatch(thunkLoadWatchlists());
     dispatch(thunkLoadPortfolios());
-    // If you have recent stocks thunk, dispatch that too.
-    // dispatch(thunkLoadRecentStocks());
   }, [dispatch]);
 
-  // Load (or compute) chart data whenever the time range changes.
+  // Update chart data when the time range changes
   useEffect(() => {
-    // Replace with a thunk if available, e.g., dispatch(thunkLoadDashboardData(timeRange))
     const simulatedData = generateSimulatedChartData(timeRange);
     setChartData(simulatedData);
   }, [timeRange]);
@@ -112,6 +92,7 @@ export default function Dashboard() {
         data: chartData.map((point) => point.value),
         borderColor: "rgb(75, 192, 120)",
         fill: false,
+        tension: 0.4,
       },
     ],
   };
@@ -127,70 +108,84 @@ export default function Dashboard() {
         text: `Total Portfolio Value (${timeRange})`,
       },
     },
+    scales: {
+      x: { grid: { display: true } },
+      y: { grid: { display: true } },
+    },
   };
 
   return (
     <div className="dashboard">
       <h1>Dashboard</h1>
-      
-      {/* Chart Section */}
-      <div className="dashboard-chart-section">
-        <h2>Investment Overview</h2>
-        <Line data={lineChartData} options={lineChartOptions} />
-        <div className="time-range-buttons">
-          {["1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"].map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              style={{
-                fontWeight: timeRange === range ? "bold" : "normal",
-              }}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Cards Section */}
-      <div className="dashboard-cards-section">
-        {/* Recently Viewed Stocks Card */}
-        <div className="stocks-card">
-          <h3>Recently Viewed Stocks</h3>
-          {recentStocks && recentStocks.length > 0 ? (
-            recentStocks.slice(0, 3).map((stock) => (
-              <div key={stock.id} className="stock-item">
-                <p>
-                  <strong>{stock.ticker_symbol}</strong> – {stock.company_name}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p>No recent stocks available.</p>
-          )}
+      <div className="dashboard-main-content">
+        {/* Left Column: Chart Section */}
+        <div className="dashboard-chart-section">
+          <h2>Investment Overview</h2>
+          <Line data={lineChartData} options={lineChartOptions} />
+          <div className="time-range-buttons">
+            {["1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"].map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={timeRange === range ? "active-range" : ""}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
         </div>
-        
-        {/* Watchlists Card */}
-        <div className="watchlists-card">
-          <h3>My Watchlists</h3>
-          {watchlists && watchlists.length > 0 ? (
-            watchlists.map((wl) => (
-              <div key={wl.id} className="watchlist-item">
-                <strong>{wl.name}</strong>
-                {wl.stocks && wl.stocks.length > 0 ? (
-                  <ul>
-                    {wl.stocks.map((stock) => (
-                      <li key={stock}> {stock.ticker_symbol} </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No stocks in this watchlist.</p>
-                )}
-              </div>
-            ))
-          ) : (
-            <p>No watchlists found.</p>
-          )}
+
+        {/* Right Column: Cards Section */}
+        <div className="dashboard-cards-column">
+          {/* Recently Viewed Stocks */}
+          <div className="stocks-card">
+            <h3>Recently Viewed Stocks</h3>
+            {recentStocks && recentStocks.length > 0 ? (
+              recentStocks.slice(0, 3).map((stock) => (
+                <div key={stock.id} className="stock-item">
+                  <p>
+                    <strong>{stock.ticker_symbol}</strong> – {stock.company_name}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p>No recent stocks available.</p>
+            )}
+          </div>
+          
+          {/* Watchlists with dropdown functionality */}
+          <div className="watchlists-card">
+            {/* "My Watchlists" navigates to the Watchlists page */}
+            <h3>
+              <Link to="/watchlists">My Watchlists</Link>
+            </h3>
+            {watchlists && watchlists.length > 0 ? (
+              watchlists.map((wl) => (
+                <div key={wl.id} className="watchlist-item">
+                  <div className="watchlist-header">
+                    <strong>{wl.name}</strong>
+                    <button onClick={() => toggleWatchlist(wl.id)}>
+                      {expanded[wl.id] ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {expanded[wl.id] && (
+                    wl.stocks && wl.stocks.length > 0 ? (
+                      <ul>
+                        {wl.stocks.map((stock) => (
+                          <li key={stock.id}>{stock.company_name}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No stocks in this watchlist.</p>
+                    )
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>No watchlists found.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

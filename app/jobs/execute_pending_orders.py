@@ -1,82 +1,87 @@
 # app/jobs/execute_pending_orders.py
+
 from datetime import datetime
-from app.models import db, Order, Portfolio, Holding, Stock, OrderStatusEnum
-from app.jobs.is_market_open import is_market_open_now
 from decimal import Decimal
+from app.models import Order, OrderStatusEnum, OrderTypeEnum, Stock, Holding, db
+from app.jobs.is_market_open import is_market_open_now
+
+def fill_order_immediately(order, fill_price):
+    """
+    Fills the order immediately: updates its status, records fill details,
+    updates portfolio cash and holdings.
+    """
+    now = datetime.utcnow()
+    order.status = OrderStatusEnum.executed
+    order.executed_price = fill_price
+    order.executed_at = now
+
+    portfolio = order.portfolio
+    quantity = Decimal(str(order.quantity))
+    fill_price_decimal = Decimal(str(fill_price))
+    
+    if order.order_type == OrderTypeEnum.buy:
+        cost = quantity * fill_price_decimal
+        # Check funds here if needed; for now we assume that was verified earlier.
+        portfolio.user.cash_balance -= cost
+
+        # Update holdings: if a holding exists, add quantity; else, create a new one.
+        holding = next((h for h in portfolio.holdings if h.stock_id == order.stock_id), None)
+        if holding:
+            holding.quantity += quantity
+        else:
+            new_holding = Holding(
+                portfolio_id=portfolio.id,
+                stock_id=order.stock_id,
+                quantity=quantity,
+                created_at=now,
+                updated_at=now
+            )
+            db.session.add(new_holding)
+    elif order.order_type == OrderTypeEnum.sell:
+        proceeds = quantity * fill_price_decimal
+        portfolio.user.cash_balance += proceeds
+        holding = next((h for h in portfolio.holdings if h.stock_id == order.stock_id), None)
+        if holding:
+            holding.quantity -= quantity
+            # Optionally remove holding if quantity becomes 0
+    # (Optional: add notifications, logging, etc.)
 
 def execute_pending_orders():
     """
-    Checks for pending immediate orders and executes them if the market is open.
+    Fetch all pending orders and execute them if conditions are met.
+    For market orders (target_price is None), execute immediately if the market is open.
+    For limit orders, check:
+      - Buy: current price <= target_price
+      - Sell: current price >= target_price
     """
-    if not is_market_open_now():
-        print("Market is closed; skipping pending order execution.")
-        return
-
-    now = datetime.utcnow()
-    # Query orders that are still pending and have no scheduled time (immediate orders)
-    pending_orders = Order.query.filter(
-        Order.status == OrderStatusEnum.pending,
-        Order.scheduled_time == None
-    ).all()
+    pending_orders = Order.query.filter(Order.status == OrderStatusEnum.pending).all()
 
     for order in pending_orders:
-        # Retrieve the current stock data.
-        stock_obj = Stock.query.get(order.stock_id)
-        if not stock_obj:
+        # Skip orders scheduled for the future
+        if order.scheduled_time and order.scheduled_time > datetime.utcnow():
             continue
 
-        fill_price = stock_obj.market_price  # current market price
-        quantity = Decimal(str(order.quantity))
-        fill_price_decimal = Decimal(str(fill_price))
-        cost = quantity * fill_price_decimal  # calculate total cost
+        stock = Stock.query.get(order.stock_id)
+        if not stock:
+            continue  # No stock info available; skip
 
-        # Process based on order type
-        if order.order_type == OrderStatusEnum.pending and order.order_type == "buy":
-            portfolio = order.portfolio
-            # Check if the user has sufficient funds
-            if portfolio.user.cash_balance < cost:
-                print(f"Order {order.id}: Insufficient funds for execution.")
-                continue
-
-            order.status = OrderStatusEnum.executed
-            order.executed_price = fill_price
-            order.executed_at = now
-            portfolio.user.cash_balance -= cost
-
-            # Update holdings
-            holding = Holding.query.filter_by(
-                portfolio_id=portfolio.id, stock_id=order.stock_id
-            ).first()
-            if holding:
-                holding.quantity += order.quantity
-            else:
-                new_holding = Holding(
-                    portfolio_id=portfolio.id,
-                    stock_id=order.stock_id,
-                    quantity=order.quantity,
-                    created_at=now,
-                    updated_at=now
-                )
-                db.session.add(new_holding)
-            print(f"Executed buy order {order.id} for {order.stock_id} at {fill_price}")
-
-        elif order.order_type == "sell":
-            portfolio = order.portfolio
-            holding = Holding.query.filter_by(
-                portfolio_id=portfolio.id, stock_id=order.stock_id
-            ).first()
-            if not holding or holding.quantity < order.quantity:
-                print(f"Order {order.id}: Not enough shares to sell.")
-                continue
-
-            order.status = OrderStatusEnum.executed
-            order.executed_price = fill_price
-            order.executed_at = now
-
-            proceeds = quantity * fill_price_decimal
-            portfolio.user.cash_balance += proceeds
-
-            holding.quantity -= order.quantity
-            print(f"Executed sell order {order.id} for {order.stock_id} at {fill_price}")
-
+        # Convert current market price to Decimal for safe comparison
+        current_price = Decimal(str(stock.market_price))
+        
+        if order.target_price is None:
+            # Market order: execute if the market is open.
+            if is_market_open_now():
+                fill_order_immediately(order, current_price)
+        else:
+            # Limit order: convert target_price to Decimal
+            target_price = Decimal(str(order.target_price))
+            if order.order_type == OrderTypeEnum.buy:
+                # For a buy limit order, execute if the current price is at or below target.
+                if current_price <= target_price:
+                    fill_order_immediately(order, current_price)
+            elif order.order_type == OrderTypeEnum.sell:
+                # For a sell limit order, execute if the current price is at or above target.
+                if current_price >= target_price:
+                    fill_order_immediately(order, current_price)
+    
     db.session.commit()

@@ -68,7 +68,7 @@
   
   .portfolio-item:hover {
     transform: scale(1.01);
-    background-color: green;
+    background-color: darkgreen;
   }
   
   /* The clickable link portion for the portfolio name/balance */
@@ -89,7 +89,7 @@
   
   /* Delete Portfolio button on the right */
   .delete-portfolio-row-btn {
-    background-color: darkgreen;
+    background-color: green;
     color: #fff;
     border: none;
     font-size: 0.9rem;

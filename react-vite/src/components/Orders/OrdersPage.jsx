@@ -1,39 +1,47 @@
-import { useEffect, useRef } from 'react';
+// src/components/Orders/OrdersPage.jsx
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { thunkLoadOrdersForPortfolio, thunkDeleteOrder } from '../../redux/orders';
+import { thunkLoadAllOrders, thunkDeleteOrder } from '../../redux/orders';
 import { thunkLoadPortfolios } from '../../redux/portfolios';
 import "./OrdersPage.css";
-
 
 export default function OrdersPage() {
   const dispatch = useDispatch();
   const orders = useSelector((state) => Object.values(state.orders));
   const portfolios = useSelector((state) => Object.values(state.portfolios));
 
-  // Track which portfolio orders have been fetched
-  const loadedPortfolioIds = useRef(new Set());
-
-  // Load portfolios on mount
+  // 1) (Optional) Load portfolios on mount, so you can display portfolio names
   useEffect(() => {
     dispatch(thunkLoadPortfolios());
   }, [dispatch]);
 
-  // Load orders for each portfolio only once
+  // 2) Load all orders on mount
   useEffect(() => {
-    if (portfolios.length > 0) {
-      portfolios.forEach((portfolio) => {
-        if (!loadedPortfolioIds.current.has(portfolio.id)) {
-          loadedPortfolioIds.current.add(portfolio.id);
-          dispatch(thunkLoadOrdersForPortfolio(portfolio.id));
-        }
-      });
-    }
-  }, [portfolios, dispatch]);
+    dispatch(thunkLoadAllOrders());
+  }, [dispatch]);
+
+  // 3) (Optional) Poll for updated orders every 5 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadAllOrders());
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [dispatch]);
 
   // Group orders by status
   const pendingOrders = orders.filter((order) => order.status === 'pending');
   const executedOrders = orders.filter((order) => order.status === 'executed');
   const cancelledOrders = orders.filter((order) => order.status === 'cancelled');
+
+  // Sort executed orders by executed_at (most recent first)
+  const sortedExecutedOrders = [...executedOrders].sort(
+    (a, b) => new Date(b.executed_at) - new Date(a.executed_at)
+  );
+
+  // Sort cancelled orders by updated_at (most recent first)
+  const sortedCancelledOrders = [...cancelledOrders].sort(
+    (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+  );
 
   const handleCancelOrder = (orderId) => {
     dispatch(thunkDeleteOrder(orderId));
@@ -49,96 +57,96 @@ export default function OrdersPage() {
           {pendingOrders.length === 0 ? (
             <p>No pending orders.</p>
           ) : (
-            pendingOrders.map((order) => (
-              <div key={order.id} className="order-item">
-                <p><strong>Order ID:</strong> {order.id}</p>
-                <p>
-                  <strong>Ticker:</strong>{" "}
-                  {order.stock ? order.stock.ticker_symbol : '-'}
-                </p>
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {order.stock ? order.stock.company_name : '-'}
-                </p>
-                <p><strong>Type:</strong> {order.order_type}</p>
-                <p><strong>Quantity:</strong> {order.quantity}</p>
-                <p>
-                  <strong>Target Price:</strong> {order.target_price ? order.target_price : '-'}
-                </p>
-                <p>
-                  <strong>Scheduled:</strong>{" "}
-                  {order.scheduled_time
-                    ? new Date(order.scheduled_time).toLocaleString()
-                    : 'Immediate'}
-                </p>
-                <button onClick={() => handleCancelOrder(order.id)}>
-                  Cancel Order
-                </button>
-              </div>
-            ))
+            pendingOrders.map((order) => {
+              // If you want portfolio name:
+              const portfolio = portfolios[order.portfolio_id];
+              const portfolioName = portfolio ? portfolio.name : `Portfolio #${order.portfolio_id}`;
+
+              return (
+                <div key={order.id} className="order-item">
+                  <p><strong>Order ID:</strong> {order.id}</p>
+                  <p><strong>Portfolio:</strong> {portfolioName}</p>
+                  <p><strong>Ticker:</strong> {order.stock?.ticker_symbol || '-'}</p>
+                  <p><strong>Name:</strong> {order.stock?.company_name || '-'}</p>
+                  <p><strong>Type:</strong> {order.order_type}</p>
+                  <p><strong>Quantity:</strong> {order.quantity}</p>
+                  <p><strong>Target Price:</strong> {order.target_price || '-'}</p>
+                  <p>
+                    <strong>Scheduled:</strong>{' '}
+                    {order.scheduled_time
+                      ? new Date(order.scheduled_time).toLocaleString()
+                      : 'Immediate'}
+                  </p>
+                  <button onClick={() => handleCancelOrder(order.id)}>
+                    Cancel Order
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
 
         {/* Executed Orders Card */}
         <div className="orders-card">
           <h2>Executed Orders</h2>
-          {executedOrders.length === 0 ? (
+          {sortedExecutedOrders.length === 0 ? (
             <p>No executed orders.</p>
           ) : (
-            executedOrders.map((order) => (
-              <div key={order.id} className="order-item">
-                <p><strong>Order ID:</strong> {order.id}</p>
-                <p>
-                  <strong>Ticker:</strong>{" "}
-                  {order.stock ? order.stock.ticker_symbol : '-'}
-                </p>
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {order.stock ? order.stock.company_name : '-'}
-                </p>
-                <p><strong>Type:</strong> {order.order_type}</p>
-                <p><strong>Quantity:</strong> {order.quantity}</p>
-                <p>
-                  <strong>Executed Price:</strong> {order.executed_price ? order.executed_price : '-'}
-                </p>
-                <p>
-                  <strong>Executed At:</strong>{" "}
-                  {order.executed_at
-                    ? new Date(order.executed_at).toLocaleString()
-                    : '-'}
-                </p>
-              </div>
-            ))
+            sortedExecutedOrders.map((order) => {
+              const portfolio = portfolios[order.portfolio_id];
+              const portfolioName = portfolio ? portfolio.name : `Portfolio #${order.portfolio_id}`;
+
+              return (
+                <div key={order.id} className="order-item">
+                  <p><strong>Order ID:</strong> {order.id}</p>
+                  <p><strong>Portfolio:</strong> {portfolioName}</p>
+                  <p><strong>Ticker:</strong> {order.stock?.ticker_symbol || '-'}</p>
+                  <p><strong>Name:</strong> {order.stock?.company_name || '-'}</p>
+                  <p><strong>Type:</strong> {order.order_type}</p>
+                  <p><strong>Quantity:</strong> {order.quantity}</p>
+                  <p>
+                    <strong>Executed Price:</strong>{' '}
+                    {order.executed_price ?? '-'}
+                  </p>
+                  <p>
+                    <strong>Executed At:</strong>{' '}
+                    {order.executed_at
+                      ? new Date(order.executed_at).toLocaleString()
+                      : '-'}
+                  </p>
+                </div>
+              );
+            })
           )}
         </div>
 
         {/* Cancelled Orders Card */}
         <div className="orders-card">
           <h2>Cancelled Orders</h2>
-          {cancelledOrders.length === 0 ? (
+          {sortedCancelledOrders.length === 0 ? (
             <p>No cancelled orders.</p>
           ) : (
-            cancelledOrders.map((order) => (
-              <div key={order.id} className="order-item">
-                <p><strong>Order ID:</strong> {order.id}</p>
-                <p>
-                  <strong>Ticker:</strong>{" "}
-                  {order.stock ? order.stock.ticker_symbol : '-'}
-                </p>
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {order.stock ? order.stock.company_name : '-'}
-                </p>
-                <p><strong>Type:</strong> {order.order_type}</p>
-                <p><strong>Quantity:</strong> {order.quantity}</p>
-                <p>
-                  <strong>Cancelled At:</strong>{" "}
-                  {order.updated_at
-                    ? new Date(order.updated_at).toLocaleString()
-                    : '-'}
-                </p>
-              </div>
-            ))
+            sortedCancelledOrders.map((order) => {
+              const portfolio = portfolios[order.portfolio_id];
+              const portfolioName = portfolio ? portfolio.name : `Portfolio #${order.portfolio_id}`;
+
+              return (
+                <div key={order.id} className="order-item">
+                  <p><strong>Order ID:</strong> {order.id}</p>
+                  <p><strong>Portfolio:</strong> {portfolioName}</p>
+                  <p><strong>Ticker:</strong> {order.stock?.ticker_symbol || '-'}</p>
+                  <p><strong>Name:</strong> {order.stock?.company_name || '-'}</p>
+                  <p><strong>Type:</strong> {order.order_type}</p>
+                  <p><strong>Quantity:</strong> {order.quantity}</p>
+                  <p>
+                    <strong>Cancelled At:</strong>{' '}
+                    {order.updated_at
+                      ? new Date(order.updated_at).toLocaleString()
+                      : '-'}
+                  </p>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
