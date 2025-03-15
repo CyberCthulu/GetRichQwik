@@ -97,7 +97,7 @@ function generateSimulatedChartData(basePrice, timeRange) {
 export default function StockDetail() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const stock = useSelector((state) => state.stocks[id]);
+  const stock = useSelector((state) => state.stocks.byId[id]);
   const { setModalContent } = useModal();
 
   // Chart time range

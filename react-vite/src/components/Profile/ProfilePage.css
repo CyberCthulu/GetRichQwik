@@ -1,0 +1,68 @@
+/* src/components/Profile/ProfilePage.css */
+
+.profile-page {
+    background-color: #111;       /* Dark background */
+    color: #fff;                  /* White text */
+    padding: 20px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+  
+  .profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: green;      /* Green circle for the avatar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+  }
+  
+  .avatar {
+    font-size: 2rem;
+    color: #fff;
+  }
+  
+  .profile-info h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  .profile-username {
+    color: #ccc;
+    margin-top: 5px;
+  }
+  
+  .profile-details p {
+    font-size: 1.1rem;
+    margin: 10px 0;
+  }
+  
+  .profile-actions {
+    margin-top: 20px;
+  }
+  
+  .profile-actions button {
+    background-color: green;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .profile-actions button:hover {
+    background-color: black;
+    border: #111;
+  }
+  

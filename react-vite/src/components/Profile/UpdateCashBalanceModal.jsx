@@ -2,11 +2,10 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { thunkUpdateUser } from "../../redux/users";
+import "./UpdateCashBalanceModal.css"; // Shared modal styles
 
 export default function UpdateCashBalanceModal({ user, onClose }) {
   const dispatch = useDispatch();
-
-  // We'll store the "amount to add" rather than the full new balance.
   const [amountToAdd, setAmountToAdd] = useState("0.00");
   const [errors, setErrors] = useState({});
 
@@ -14,17 +13,14 @@ export default function UpdateCashBalanceModal({ user, onClose }) {
     e.preventDefault();
     setErrors({});
 
-    // Convert user.cash_balance (string) and amountToAdd to numbers
     const currentBalance = parseFloat(user.cash_balance) || 0;
     const addAmount = parseFloat(amountToAdd) || 0;
 
-    // Disallow negative or zero amounts
     if (addAmount <= 0) {
       setErrors({ general: "Please enter a positive amount." });
       return;
     }
 
-    // New total is the sum of the current balance and the entered amount
     const newBalance = currentBalance + addAmount;
 
     try {
@@ -40,7 +36,7 @@ export default function UpdateCashBalanceModal({ user, onClose }) {
           const errorResponse = await err.json();
           setErrors(
             errorResponse.errors ||
-            { general: errorResponse.message || "An error occurred." }
+              { general: errorResponse.message || "An error occurred." }
           );
         } catch (parseError) {
           setErrors({ general: "An unexpected error occurred. Please try again." });
@@ -53,23 +49,28 @@ export default function UpdateCashBalanceModal({ user, onClose }) {
   };
 
   return (
-    <div className="update-cash-balance-modal">
+    <div className="modal-container update-cash-balance-modal">
       <h2>Increase Cash Balance</h2>
       {errors.general && <p className="error">{errors.general}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form onSubmit={handleSubmit} className="modal-form">
+        <div className="form-group">
           <label>Amount to Add</label>
-          <input
-            type="number"
-            step="0.01"
-            value={amountToAdd}
-            onChange={(e) => setAmountToAdd(e.target.value)}
-            min="0.01" // Basic HTML validation
-            required
-          />
+          <div className="input-wrapper">
+            <span className="dollar-sign">$</span>
+            <input
+              type="number"
+              step="0.01"
+              value={amountToAdd}
+              onChange={(e) => setAmountToAdd(e.target.value)}
+              min="0.01"
+              required
+            />
+          </div>
         </div>
-        <button type="submit">Add Funds</button>
-        <button type="button" onClick={onClose}>Cancel</button>
+        <div className="modal-actions">
+          <button type="submit" className="modal-submit-btn">Add Funds</button>
+          <button type="button" className="modal-cancel-btn" onClick={onClose}>Cancel</button>
+        </div>
       </form>
     </div>
   );

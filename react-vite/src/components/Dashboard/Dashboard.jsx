@@ -1,7 +1,7 @@
 // src/components/Dashboard/Dashboard.jsx
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom"; // for navigation
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -28,28 +28,31 @@ ChartJS.register(
 // Import Redux thunks
 import { thunkLoadWatchlists } from "../../redux/watchlists";
 import { thunkLoadPortfolios } from "../../redux/portfolios";
+import { thunkLoadRecentStocks } from "../../redux/stocks";
 
-// Import CSS
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
 
-  // Get data from Redux
+  // Get data from Redux:
+  // - watchlists and portfolios remain the same.
+  // - recentStocks comes from state.stocks.recent.
   const watchlists = useSelector((state) => Object.values(state.watchlists));
   const portfolios = useSelector((state) => Object.values(state.portfolios));
-  const recentStocks = useSelector((state) => state.stocks.recent) || [
-    { id: 1, ticker_symbol: "AAPL", company_name: "Apple Inc." },
-    { id: 2, ticker_symbol: "MSFT", company_name: "Microsoft Corporation" },
-    { id: 3, ticker_symbol: "GOOGL", company_name: "Alphabet Inc." },
-  ];
+  const recentStocks = useSelector((state) => state.stocks.recent) || [];
 
-  // Local state for chart data, time range, and watchlist expansion
+  // Local state for chart data, time range, and watchlist expansion.
   const [timeRange, setTimeRange] = useState("1D");
   const [chartData, setChartData] = useState([]);
   const [expanded, setExpanded] = useState({});
 
-  // Toggle expansion for a specific watchlist
+  // Deduplicate recent stocks by id (in case of duplicates).
+  const dedupedRecentStocks = [
+    ...new Map(recentStocks.map((stock) => [stock.id, stock])).values(),
+  ];
+
+  // Toggle expansion for a specific watchlist.
   const toggleWatchlist = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -71,19 +74,20 @@ export default function Dashboard() {
     }));
   };
 
-  // Load data on component mount
+  // Load data on component mount.
   useEffect(() => {
     dispatch(thunkLoadWatchlists());
     dispatch(thunkLoadPortfolios());
+    dispatch(thunkLoadRecentStocks());
   }, [dispatch]);
 
-  // Update chart data when the time range changes
+  // Update chart data when the time range changes.
   useEffect(() => {
     const simulatedData = generateSimulatedChartData(timeRange);
     setChartData(simulatedData);
   }, [timeRange]);
 
-  // Prepare Chart.js data structure.
+  // Prepare Chart.js data.
   const lineChartData = {
     labels: chartData.map((point) => point.date),
     datasets: [
@@ -100,13 +104,8 @@ export default function Dashboard() {
   const lineChartOptions = {
     responsive: true,
     plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: `Total Portfolio Value (${timeRange})`,
-      },
+      legend: { position: "top" },
+      title: { display: true, text: `Total Portfolio Value (${timeRange})` },
     },
     scales: {
       x: { grid: { display: true } },
@@ -138,14 +137,15 @@ export default function Dashboard() {
 
         {/* Right Column: Cards Section */}
         <div className="dashboard-cards-column">
-          {/* Recently Viewed Stocks */}
+          {/* Recently Viewed Stocks Card */}
           <div className="stocks-card">
             <h3>Recently Viewed Stocks</h3>
-            {recentStocks && recentStocks.length > 0 ? (
-              recentStocks.slice(0, 3).map((stock) => (
+            {dedupedRecentStocks && dedupedRecentStocks.length > 0 ? (
+              dedupedRecentStocks.slice(0, 3).map((stock) => (
                 <div key={stock.id} className="stock-item">
                   <p>
-                    <strong>{stock.ticker_symbol}</strong> – {stock.company_name}
+                    <strong>{stock.ticker_symbol}</strong> –{" "}
+                    {stock.company_name}
                   </p>
                 </div>
               ))
@@ -154,9 +154,8 @@ export default function Dashboard() {
             )}
           </div>
           
-          {/* Watchlists with dropdown functionality */}
+          {/* Watchlists with Dropdown Functionality */}
           <div className="watchlists-card">
-            {/* "My Watchlists" navigates to the Watchlists page */}
             <h3>
               <Link to="/watchlists">My Watchlists</Link>
             </h3>

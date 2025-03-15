@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from sqlalchemy import or_
 from app.models import Stock, db
 from app.services.finnhub_api import finnhub_client 
@@ -46,12 +46,20 @@ def search_stocks():
 def get_stock_details(stock_id):
     """
     Retrieves detailed information for a specific stock by its numeric ID.
+    Also updates the session with this stock ID as recently viewed.
     """
     stock = Stock.query.get(stock_id)
     if not stock:
         return jsonify({"message": "Stock not found"}), 404
-    return jsonify({"stock": stock.to_dict()}), 200
 
+    # Update session: move stock_id to the front if already present, otherwise add it.
+    recent_ids = session.get("recent_stock_ids", [])
+    if stock.id in recent_ids:
+        recent_ids.remove(stock.id)
+    recent_ids.insert(0, stock.id)
+    session["recent_stock_ids"] = recent_ids[:10]  # keep only the 10 most recent
+
+    return jsonify({"stock": stock.to_dict()}), 200
 @stock_routes.route('/recent', methods=['GET'])
 def get_recent_stocks():
     """
