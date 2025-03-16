@@ -1,0 +1,131 @@
+/* ===========================
+   Explore Menu Styles
+   =========================== */
+
+/* Container for the Explore button & dropdown */
+.explore-menu {
+    position: relative;
+    display: inline-block; /* So the dropdown is anchored correctly */
+  }
+  
+  /* Explore button styling */
+  .explore-button {
+    color: #ffffff;
+    border: 1px solid white; /* White outline */
+    margin-right: 10px;
+    padding: 6px 6px;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* optional spacing if you have an icon */
+  }
+  
+  .explore-button:hover {
+    background-color: #3d3d3d;
+  }
+  
+  /* Dropdown container for Explore items */
+  .explore-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background-color: #2d2d2d;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    min-width: 160px;
+    z-index: 1000;
+    padding: 8px 0; /* vertical padding around the items */
+  }
+  
+  /* Each link/item inside the Explore dropdown */
+  .dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #404040;
+  }
+  
+  /* ===========================
+     Profile Menu Styles
+     =========================== */
+  
+  /* (Optional) container for the profile button & dropdown so absolute
+     positioning will be anchored to this container */
+  .profile-button-container {
+    position: relative;
+    margin-left: 10px
+  }
+  
+  /* Profile button styling (if you want it to look similar to Explore) */
+  .profile-button {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border: none;
+    padding: 10px 10px;
+    font-size: 1.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* optional spacing if you have an icon */
+  }
+  
+  .profile-button:hover {
+    background-color: #3d3d3d;
+  }
+  
+  /* Dropdown container for Profile items */
+  .profile-dropdown {
+    display: block;
+    flex-direction: column; /* Force vertical stacking */
+    align-items: flex-start; /* Align text to the left if needed */
+    position: absolute;
+    top: 100%;
+    right: 0; /* or right: 0 if you prefer */
+    margin-top: 8px;
+    background-color: #2d2d2d;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    list-style: none;
+    padding: 8px 8;
+    margin: 0;
+  }
+  
+  /* Profile dropdown list items (username, email, etc.) */
+  .profile-dropdown li {
+    display: block; /* Ensure each item takes a full line */
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .profile-dropdown li:hover {
+    background-color: #404040;
+  }
+  
+  /* Buttons inside the dropdown (e.g. Logout) */
+  .profile-dropdown li button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+  }
+  
+  .profile-dropdown li button:hover {
+    text-decoration: underline;
+  }
+  

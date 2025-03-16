@@ -25,4 +25,4 @@ RUN flask db upgrade
 # Seed the database (remove or adjust if you don't want auto-seeding in production)
 RUN flask seed all
 
-CMD gunicorn app:app
+CMD gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 app:app

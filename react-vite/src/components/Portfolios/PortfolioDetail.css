@@ -1,7 +1,8 @@
 /* src/components/Portfolios/PortfolioDetail.css */
 
 .portfolio-detail {
-    background-color: darkslategray;
+    background-color: black;
+    border: 1px solid white; /* White outline */
     padding: 20px;
     max-width: 800px;
     min-height: 100vh;
@@ -82,7 +83,7 @@
   .holding-actions button {
     background-color: green;
     color: #fff;
-    border: none;
+    border: 1px solid white; /* White outline */
     padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;

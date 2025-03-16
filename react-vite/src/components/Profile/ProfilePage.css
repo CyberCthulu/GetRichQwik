@@ -52,7 +52,7 @@
   .profile-actions button {
     background-color: green;
     color: #fff;
-    border: none;
+    border: 1px solid white; /* White outline */
     padding: 10px 20px;
     margin-right: 10px;
     border-radius: 4px;
@@ -63,6 +63,5 @@
   
   .profile-actions button:hover {
     background-color: black;
-    border: #111;
   }
   

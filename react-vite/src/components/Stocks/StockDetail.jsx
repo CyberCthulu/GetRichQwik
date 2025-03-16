@@ -8,6 +8,7 @@ import BuyOrderModal from "./BuyOrderModal";
 import AddToWatchlistModal from "./AddToWatchlistModal";
 import { Line } from "react-chartjs-2";
 import "./StockDetail.css";
+import socket from "../../socket";  // Shared Socket.IO instance
 
 import {
   Chart as ChartJS,
@@ -43,16 +44,13 @@ function generateSimulatedChartData(basePrice, timeRange) {
     const dataPoints = 60;
     let currentPrice = basePrice;
     for (let i = 0; i < dataPoints; i++) {
-      // Slightly bigger delta for more noticeable decimal changes (±0.3%)
       const delta = (Math.random() - 0.5) * basePrice * 0.003;
       currentPrice = Math.max(currentPrice + delta, 0);
-
       const dateObj = new Date(now.getTime() - (dataPoints - i - 1) * 60 * 1000);
       const timeString = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       data.push({ date: timeString, price: currentPrice });
     }
   } else {
-    // For other ranges, fewer points with a bigger ±3% fluctuation
     let dataPoints, stepInHours;
     switch (timeRange) {
       case "1W":
@@ -84,7 +82,6 @@ function generateSimulatedChartData(basePrice, timeRange) {
     for (let i = 0; i < dataPoints; i++) {
       const delta = (Math.random() - 0.5) * basePrice * 0.03;
       currentPrice = Math.max(currentPrice + delta, 0);
-
       const dateObj = new Date(now);
       dateObj.setHours(dateObj.getHours() - stepInHours * (dataPoints - i - 1));
       const dateString = dateObj.toLocaleDateString([], { month: "numeric", day: "numeric" });
@@ -107,35 +104,42 @@ export default function StockDetail() {
   // Global y-axis range that only expands
   const [yAxisRange, setYAxisRange] = useState({ min: Infinity, max: -Infinity });
 
-  // 1) Load stock info on mount, then poll
+  // (Optional) Initial HTTP load of stock details
   useEffect(() => {
     dispatch(thunkLoadOneStock(id));
-    const intervalId = setInterval(() => {
-      dispatch(thunkLoadOneStock(id));
-    }, 3000);
-    return () => clearInterval(intervalId);
   }, [dispatch, id]);
 
-  // 2) Generate new chart data
+  // Subscribe to real-time stock updates via WebSocket.
+  useEffect(() => {
+    socket.emit("subscribe_stock", { stock_id: id });
+    socket.on("stock_update", (data) => {
+      if (data.id === Number(id)) {
+        dispatch({ type: "UPDATE_STOCK", payload: data });
+      }
+    });
+    return () => {
+      socket.off("stock_update");
+    };
+  }, [dispatch, id]);
+
+  // Generate new chart data whenever the stock price or time range changes.
   useEffect(() => {
     if (!stock) return;
     const simData = generateSimulatedChartData(stock.market_price, timeRange);
     setChartData(simData);
   }, [stock, timeRange]);
 
-  // 3) Update y-axis range if new data breaks outside old range
+  // Update y-axis range if new chart data falls outside the current range.
   useEffect(() => {
     if (chartData.length === 0) return;
     const prices = chartData.map((p) => p.price);
     const dataMin = Math.min(...prices);
     const dataMax = Math.max(...prices);
 
-    setYAxisRange((prev) => {
-      return {
-        min: Math.min(prev.min, dataMin),
-        max: Math.max(prev.max, dataMax),
-      };
-    });
+    setYAxisRange((prev) => ({
+      min: Math.min(prev.min, dataMin),
+      max: Math.max(prev.max, dataMax),
+    }));
   }, [chartData]);
 
   if (!stock) {
@@ -143,11 +147,8 @@ export default function StockDetail() {
   }
 
   const displayedPrice = stock.market_price;
-
-  // Larger buffer to create a taller y-axis
   const rangeDiff = yAxisRange.max - yAxisRange.min;
-  const buffer = rangeDiff * 0.2 || 1; // 20% buffer if range>0, else fallback
-
+  const buffer = rangeDiff * 0.2 || 1;
   const yMin = yAxisRange.min - buffer;
   const yMax = yAxisRange.max + buffer;
 
@@ -166,10 +167,8 @@ export default function StockDetail() {
     ],
   };
 
-  // Only expand the axis if new data requires it; never shrink
   const chartOptions = {
     responsive: true,
-    // Animate transitions to see smooth re-scaling
     animation: {
       duration: 600,
       easing: "easeInOutQuad",
@@ -178,9 +177,8 @@ export default function StockDetail() {
       y: {
         min: Number.isFinite(yMin) ? yMin : 0,
         max: Number.isFinite(yMax) ? yMax : 100,
-        // Force decimal display with stepSize
         ticks: {
-          stepSize: 0.5, // Adjust as needed
+          stepSize: 0.5,
           callback: (value) => value.toFixed(2),
         },
       },
@@ -201,7 +199,6 @@ export default function StockDetail() {
 
   return (
     <div className="stock-detail">
-      {/* Header row */}
       <div className="stock-header">
         <div className="left-info">
           <h1>
@@ -215,7 +212,6 @@ export default function StockDetail() {
       </div>
 
       <div className="main-content">
-        {/* Chart Section */}
         <div className="chart-section">
           <Line data={chartJSData} options={chartOptions} />
           <div className="time-range-buttons">
@@ -231,7 +227,6 @@ export default function StockDetail() {
           </div>
         </div>
 
-        {/* Buy Stock Card */}
         <div className="buy-stock-card">
           <h2>Buy {stock.ticker_symbol}</h2>
           <p>Market Price: ${Number(displayedPrice).toFixed(2)}</p>

@@ -18,8 +18,8 @@
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 8px;
-    background-color: darkslategray;
-    /* Set a maximum height for each card */
+    background-color: black;
+    border: 1px solid white; /* White outline */
     max-height: 600px;
     overflow-y: auto;
   }
@@ -57,7 +57,7 @@
   .order-item button {
     margin-top: 10px;
     padding: 5px 10px;
-    border: none;
+    border: 1px solid white; /* White outline */
     border-radius: 4px;
     cursor: pointer;
   }

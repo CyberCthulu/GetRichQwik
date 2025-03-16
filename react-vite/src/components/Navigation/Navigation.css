@@ -1,13 +1,14 @@
-/* src/components/Navigation/Navigation.css */
-
 .navigation-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: black;
   height: 60px;
   padding: 0 20px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 2px solid white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-left, .nav-middle, .nav-right {
@@ -15,9 +16,34 @@
   align-items: center;
 }
 
-/* Logo image or text */
+/* Logo styling */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .nav-logo img {
-  height: 40px; /* adjust as needed */
+  width: 50px;
+  height: 50px;
+  border-radius: 80%;
+  transition: transform 0.2s ease-in-out;
+  border-radius: 2px solid white;
+
+}
+
+.nav-logo img:hover {
+  transform: scale(1.1);
+}
+
+.logo-text {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: normal;
+  margin-left: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: darkgreen;
 }
 
 /* Search Form */
@@ -28,37 +54,41 @@
 }
 
 .search-input {
-  width: 200px;
+  width: 300px; /* Increased width */
   padding: 5px;
   margin-right: 5px;
 }
 
 .search-button {
   padding: 5px 10px;
+  border: 1px solid white; /* White outline */
 }
 
-/* Explore Link */
+/* Dropdowns */
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.dropdown-menu.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Additional styling for links */
 .explore-link {
   text-decoration: none;
   color: #333;
-  border: 1px solid #999;
+  border: 1px solid white;
   border-radius: 4px;
   padding: 5px 10px;
 }
 
-/* Right side: ProfileButton can stay as is */
+/* Right side */
 .nav-right {
   display: flex;
   align-items: center;
-}
-
-.nav-logo img {
-  width: 50px;         /* Increase/decrease as desired */
-  height: 50px;        /* Must match width for a perfect circle */
-  border-radius: 80%;  /* Rounds the image into a circle */
-  transition: transform 0.2s ease-in-out; /* smooth animation */
-}
-
-.nav-logo img:hover {
-  transform: scale(1.1);
 }

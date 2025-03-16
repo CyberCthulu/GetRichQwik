@@ -45,7 +45,7 @@
     flex: 1; /* equal width */
     margin: 0 5px; /* horizontal spacing between buttons */
     padding: 5px;
-    border: none;
+    border: 1px solid white; /* White outline */
     border-radius: 4px;
     background-color: green;
     color: #fff;

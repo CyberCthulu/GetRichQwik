@@ -46,8 +46,8 @@
   
   /* Each watchlist item (row) */
   .watchlist-item {
-    background-color: darkslategray;
-    border: 1px solid #333;
+    background-color: black;
+    border: 1px solid white;
     border-radius: 4px;
     margin-bottom: 15px;
     padding: 10px;
@@ -125,7 +125,8 @@
   }
 
   .watchlist-stock-item:hover {
-    background-color: darkslategray;
+    background-color: green;
+    border: 1px solid white; /* White outline */
   }
   
   .watchlist-stock-item span {
