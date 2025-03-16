@@ -30,4 +30,6 @@ email-validator
 websocket-client==1.6.1
 finnhub-python==2.2.1
 pytz==2023.3
+flask-socketio==5.3.4
+
 
