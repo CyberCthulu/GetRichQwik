@@ -45,7 +45,8 @@
   /* Chart section on the left */
   .chart-section {
     flex: 0 1 60%;          /* ~60% of width */
-    background-color: darkslategray;
+    background-color: black;
+    border: 1px solid white; /* White outline */
     padding: 20px;
     border-radius: 8px;
     transition: background-color 0.2s, transform 0.2s;
@@ -59,6 +60,7 @@
   .time-range-buttons {
     margin-top: 10px;
     display: flex;
+    border: 1px solid white; /* White outline */
     justify-content: center;
     flex-wrap: wrap; /* wrap if not enough space */
     gap: 8px;
@@ -66,7 +68,7 @@
   
   .time-range-buttons button {
     background-color: green;
-    border: none;
+    border: 1px solid white; /* White outline */
     color: #fff;
     padding: 6px 12px;
     border-radius: 4px;
@@ -86,7 +88,8 @@
   /* Buy stock card on the right */
   .buy-stock-card {
     flex: 0 1 30%;           /* ~40% of width */
-    background-color: darkslategray;
+    background-color: black;
+    border: 1px solid white; /* White outline */
     padding: 20px;
     border-radius: 8px;
     transition: background-color 0.2s, transform 0.2s;

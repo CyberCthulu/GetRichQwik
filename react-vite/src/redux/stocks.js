@@ -1,23 +1,22 @@
-// src/redux/stocks.js
 import { csrfFetch } from "./csrf";
 
 /** Action Types **/
 const LOAD_STOCKS = "stocks/loadStocks";
 const LOAD_ONE_STOCK = "stocks/loadOneStock";
 const LOAD_RECENT_STOCKS = "stocks/loadRecentStocks";
+const UPDATE_STOCK = "stocks/updateStock";  // NEW action type for live updates
 
 /** Action Creators **/
 const loadStocks = (stocks) => ({ type: LOAD_STOCKS, stocks });
 const loadOneStock = (stock) => ({ type: LOAD_ONE_STOCK, stock });
 const loadRecentStocks = (stocks) => ({ type: LOAD_RECENT_STOCKS, stocks });
+export const updateStock = (stock) => ({ type: UPDATE_STOCK, stock }); // NEW action creator
 
 /** Thunks **/
-// GET all stocks or optionally search (if searchParams exists)
+// GET all stocks (or optionally search)
 export const thunkLoadStocks = (searchParams) => async (dispatch) => {
   let url = "/api/stocks";
-  // e.g. ?ticker=AAPL or ?company=Apple
   if (searchParams) url += `?${new URLSearchParams(searchParams).toString()}`;
-
   const res = await csrfFetch(url);
   if (res.ok) {
     const data = await res.json(); // { stocks: [...] }
@@ -65,6 +64,13 @@ export default function stocksReducer(state = initialState, action) {
       };
     case LOAD_RECENT_STOCKS:
       return { ...state, recent: action.stocks };
+    case UPDATE_STOCK: {
+      // Update a single stock with new data coming from WebSocket updates.
+      return {
+        ...state,
+        byId: { ...state.byId, [action.stock.id]: action.stock },
+      };
+    }
     default:
       return state;
   }

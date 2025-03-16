@@ -16,7 +16,7 @@ body {
   button {
     background-color: green;
     color: white;
-    border: none;
+    border: 1px solid white; /* White outline */
     border-radius: 8px;
     padding: 0.5em 1em;
     cursor: pointer;

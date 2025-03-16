@@ -52,7 +52,8 @@
      ------------------------------------------------ */
   .dashboard-chart-section {
     flex: 1; /* fill available space equally with the right column */
-    background-color: #1a1a1a; /* a bit lighter than pure black for contrast */
+    background-color: black; /* a bit lighter than pure black for contrast */
+    border: solid 1px white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
@@ -72,6 +73,7 @@
   
   /* Time Range Buttons */
   .time-range-buttons {
+    border: 1px solid white; /* White outline */
     display: flex;
     justify-content: center;
     gap: 8px;
@@ -81,7 +83,6 @@
   .time-range-buttons button {
     background-color: #006400;
     color: #fff;
-    border: none;
     padding: 8px 14px;
     border-radius: 4px;
     cursor: pointer;
@@ -113,8 +114,9 @@
      ------------------------------------------------ */
   .stocks-card,
   .watchlists-card {
-    background-color: darkslategray;
+    background-color: black;
     padding: 20px;
+    border: 1px solid white; /* White outline */
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     transition: background-color 0.2s ease-in-out;

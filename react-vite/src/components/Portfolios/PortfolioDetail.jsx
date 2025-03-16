@@ -1,3 +1,4 @@
+
 // src/components/Portfolios/PortfolioDetail.jsx
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,6 +7,7 @@ import { thunkLoadOnePortfolio, thunkDeletePortfolio } from "../../redux/portfol
 import { thunkLoadHoldingsForPortfolio } from "../../redux/holdings";
 import { useModal } from "../../context/Modal";
 import DeletePortfolioModal from "./DeletePortfolioModal";
+import socket from "../../socket"; // Shared Socket.IO instance
 import "./PortfolioDetail.css";
 // import BuySellModal from "./BuySellModal";
 
@@ -23,31 +25,39 @@ export default function PortfolioDetail() {
     )
   );
 
-  // Initial load on mount
+  // Initial HTTP load on mount
   useEffect(() => {
     dispatch(thunkLoadOnePortfolio(id));
     dispatch(thunkLoadHoldingsForPortfolio(id));
   }, [dispatch, id]);
 
-  // Poll for updates every 30 seconds
+  // Subscribe to live portfolio updates via WebSocket.
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      dispatch(thunkLoadOnePortfolio(id));
-      dispatch(thunkLoadHoldingsForPortfolio(id));
-    }, 1500); // adjust the interval as needed (30000ms = 30 seconds)
-    return () => clearInterval(intervalId);
+    // Emit a subscription event for this portfolio
+    socket.emit("subscribe_portfolio", { portfolio_id: id });
+    // Listen for updates from the backend.
+    socket.on("portfolio_update", (data) => {
+      if (data.id === Number(id)) {
+        dispatch({ type: "UPDATE_PORTFOLIO", payload: data });
+      }
+    });
+    return () => {
+      socket.off("portfolio_update");
+    };
   }, [dispatch, id]);
 
   if (!portfolio) return <p>Loading portfolio...</p>;
 
-  // Opens the buy/sell modal (assuming you'll use it later)
+  // Opens the buy/sell modal (placeholder; adjust as needed)
   const openBuySellModal = (holding, actionType) => {
     setModalContent(
-      <BuySellModal
-        holding={holding}
-        actionType={actionType}
-        onClose={() => setModalContent(null)}
-      />
+      // Uncomment and use your BuySellModal when ready:
+      // <BuySellModal
+      //   holding={holding}
+      //   actionType={actionType}
+      //   onClose={() => setModalContent(null)}
+      // />
+      <div>Buy/Sell Modal Placeholder</div>
     );
   };
 
@@ -58,7 +68,7 @@ export default function PortfolioDetail() {
         portfolioName={portfolio.name}
         onClose={() => setModalContent(null)}
         onSuccess={() => {
-          // e.g., after it’s deleted, go back to the list
+          // After deletion, navigate back to the portfolio list.
           navigate("/portfolios");
         }}
       />

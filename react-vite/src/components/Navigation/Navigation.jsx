@@ -1,4 +1,3 @@
-// src/components/Navigation/Navigation.jsx
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProfileButton from "./ProfileButton";
@@ -11,10 +10,11 @@ function Navigation() {
 
   return (
     <nav className="navigation-bar">
-      {/* Left: Logo (links to home) */}
+      {/* Left: Logo with GRQ text */}
       <div className="nav-left">
         <NavLink to="/" className="nav-logo">
           <img src="/logo.webp" alt="GetRichQwik Logo" />
+          <span className="logo-text">GRQ</span>
         </NavLink>
       </div>
 

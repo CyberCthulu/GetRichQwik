@@ -5,6 +5,7 @@ import { thunkLogout } from "../../redux/session";
 import OpenModalMenuItem from "./OpenModalMenuItem";
 import LoginFormModal from "../LoginFormModal";
 import SignupFormModal from "../SignupFormModal";
+import "./DropdownMenus.css";
 
 function ProfileButton() {
   const dispatch = useDispatch();
@@ -13,21 +14,18 @@ function ProfileButton() {
   const ulRef = useRef();
 
   const toggleMenu = (e) => {
-    e.stopPropagation(); // Keep from bubbling up to document and triggering closeMenu
+    e.stopPropagation();
     setShowMenu(!showMenu);
   };
 
   useEffect(() => {
     if (!showMenu) return;
-
     const closeMenu = (e) => {
       if (ulRef.current && !ulRef.current.contains(e.target)) {
         setShowMenu(false);
       }
     };
-
     document.addEventListener("click", closeMenu);
-
     return () => document.removeEventListener("click", closeMenu);
   }, [showMenu]);
 
@@ -40,12 +38,15 @@ function ProfileButton() {
   };
 
   return (
-    <>
-      <button onClick={toggleMenu}>
+    <div className="profile-button-container">
+      {/* Use the same .nav-button class here as well */}
+      <button onClick={toggleMenu} className="nav-button">
         <FaUserCircle />
+        {/* Optionally add text next to the icon if you want, e.g. "Profile" */}
       </button>
+
       {showMenu && (
-        <ul className={"profile-dropdown"} ref={ulRef}>
+        <ul className="profile-dropdown" ref={ulRef}>
           {user ? (
             <>
               <li>{user.username}</li>
@@ -70,7 +71,7 @@ function ProfileButton() {
           )}
         </ul>
       )}
-    </>
+    </div>
   );
 }
 

@@ -1,4 +1,3 @@
-// src/redux/portfolios.js
 import { csrfFetch } from "./csrf";
 
 // ----------------- Action Types ------------------
@@ -15,9 +14,9 @@ const loadPortfolios = (portfolios) => ({
 });
 
 const loadOnePortfolio = (portfolio) => ({
-    type: LOAD_ONE_PORTFOLIO,
-    portfolio,
-  });
+  type: LOAD_ONE_PORTFOLIO,
+  portfolio,
+});
 
 const addPortfolio = (portfolio) => ({
   type: ADD_PORTFOLIO,
@@ -36,82 +35,80 @@ const removePortfolio = (portfolioId) => ({
 
 // ----------------- Thunks ------------------------
 
-// GET all portfolios (for current user, e.g. /api/portfolios)
+// GET all portfolios (for current user)
 export const thunkLoadPortfolios = () => async (dispatch) => {
   const res = await csrfFetch("/api/users/portfolios");
   if (res.ok) {
-      const data = await res.json(); // { portfolios: [...] }
-      dispatch(loadPortfolios(data.portfolios));
-    }
-  };
-  
+    const data = await res.json(); // { portfolios: [...] }
+    dispatch(loadPortfolios(data.portfolios));
+  }
+};
+
 // GET one portfolio by id
 export const thunkLoadOnePortfolio = (portfolioId) => async (dispatch) => {
-    const res = await csrfFetch(`/api/portfolios/${portfolioId}`);
-    if (res.ok) {
-      const data = await res.json(); // { portfolio: {...} }
-      dispatch(loadOnePortfolio(data.portfolio));
-    }
-  };
+  const res = await csrfFetch(`/api/portfolios/${portfolioId}`);
+  if (res.ok) {
+    const data = await res.json(); // { portfolio: {...} }
+    dispatch(loadOnePortfolio(data.portfolio));
+  }
+};
 
 // POST create a new portfolio
 export const thunkCreatePortfolio = (payload) => async (dispatch) => {
-    const res = await csrfFetch("/api/portfolios/", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      dispatch(addPortfolio(data.portfolio));
-      return data.portfolio;
-    }
-  };
+  const res = await csrfFetch("/api/portfolios/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    dispatch(addPortfolio(data.portfolio));
+    return data.portfolio;
+  }
+};
 
 // PUT update a portfolio
 export const thunkUpdatePortfolio = (portfolioId, payload) => async (dispatch) => {
-    const res = await csrfFetch(`/api/portfolios/${portfolioId}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      dispatch(updatePortfolioAction(data.portfolio));
-      return data.portfolio;
-    }
-  };
-  
+  const res = await csrfFetch(`/api/portfolios/${portfolioId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    dispatch(updatePortfolioAction(data.portfolio));
+    return data.portfolio;
+  }
+};
 
 // DELETE a portfolio
 export const thunkDeletePortfolio = (portfolioId) => async (dispatch) => {
-    const res = await csrfFetch(`/api/portfolios/${portfolioId}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      dispatch(removePortfolio(portfolioId));
-    }
-  };
-
-// ----------------- Initial State & Reducer -------
-/** Reducer **/
-export default function portfoliosReducer(state = {}, action) {
-    switch (action.type) {
-      case LOAD_PORTFOLIOS: {
-        const newState = {};
-        action.portfolios.forEach((pf) => {
-          newState[pf.id] = pf;
-        });
-        return newState;
-      }
-      case LOAD_ONE_PORTFOLIO:
-      case ADD_PORTFOLIO:
-      case UPDATE_PORTFOLIO:
-        return { ...state, [action.portfolio.id]: action.portfolio };
-      case REMOVE_PORTFOLIO: {
-        const newState = { ...state };
-        delete newState[action.portfolioId];
-        return newState;
-      }
-      default:
-        return state;
-    }
+  const res = await csrfFetch(`/api/portfolios/${portfolioId}`, {
+    method: "DELETE",
+  });
+  if (res.ok) {
+    dispatch(removePortfolio(portfolioId));
   }
+};
+
+// ----------------- Reducer -----------------------
+export default function portfoliosReducer(state = {}, action) {
+  switch (action.type) {
+    case LOAD_PORTFOLIOS: {
+      const newState = {};
+      action.portfolios.forEach((pf) => {
+        newState[pf.id] = pf;
+      });
+      return newState;
+    }
+    case LOAD_ONE_PORTFOLIO:
+    case ADD_PORTFOLIO:
+    case UPDATE_PORTFOLIO:
+      return { ...state, [action.portfolio.id]: action.portfolio };
+    case REMOVE_PORTFOLIO: {
+      const newState = { ...state };
+      delete newState[action.portfolioId];
+      return newState;
+    }
+    default:
+      return state;
+  }
+}

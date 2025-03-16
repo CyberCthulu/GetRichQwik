@@ -30,7 +30,7 @@
   .add-portfolio-btn {
     background-color: green;
     color: #fff;
-    border: none;
+    border: 1px solid white; /* White outline */
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -58,8 +58,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: darkslategray;
-    border: 1px solid #333;
+    background-color: black;
+    border: 1px solid white; /* White outline */
     border-radius: 4px;
     margin-bottom: 15px;
     padding: 20px;
@@ -91,7 +91,7 @@
   .delete-portfolio-row-btn {
     background-color: green;
     color: #fff;
-    border: none;
+    border: 1px solid white; /* White outline */
     font-size: 0.9rem;
     border-radius: 4px;
     padding: 6px 10px;
