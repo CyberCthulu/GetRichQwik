@@ -14,7 +14,7 @@ FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
 
 def run_finnhub_ws(app):
     """
-    Connect to Finnhub's WebSocket, subscribe to desired symbols,
+    Connect to Finnhub's WebSocket, subscribe to all symbols in the DB,
     update stock prices, and trigger live UI updates.
     """
     with app.app_context():
@@ -66,12 +66,10 @@ def run_finnhub_ws(app):
 
         def on_open(ws):
             print("Global WS connection opened")
-            symbols = [
-                "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "FB",
-                "BRK.B", "JNJ", "V", "WMT", "JPM", "MA",
-                "PG", "NVDA", "DIS", "HD", "BAC", "XOM"
-            ]
-            for symbol in symbols:
+            # Dynamically fetch all ticker symbols from the DB and subscribe to each.
+            all_stocks = Stock.query.all()
+            for stock in all_stocks:
+                symbol = stock.ticker_symbol
                 subscribe_message = json.dumps({"type": "subscribe", "symbol": symbol})
                 ws.send(subscribe_message)
                 print(f"Subscribed to {symbol}")
