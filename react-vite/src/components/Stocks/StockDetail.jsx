@@ -1,14 +1,14 @@
-// src/components/StockDetail.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { thunkLoadOneStock } from "../../redux/stocks";
 import { useModal } from "../../context/Modal";
 import BuyOrderModal from "./BuyOrderModal";
 import AddToWatchlistModal from "./AddToWatchlistModal";
 import { Line } from "react-chartjs-2";
 import "./StockDetail.css";
-import socket from "../../socket";  // Shared Socket.IO instance
+// Remove socket imports if not needed anymore for UI updates
+// import socket from "../../socket";  
 
 import {
   Chart as ChartJS,
@@ -30,17 +30,10 @@ ChartJS.register(
   Legend
 );
 
-/**
- * Generate simulated chart data.
- * - 1D: 60 data points (past hour), random walk with a slightly bigger delta (±0.3%)
- * - Other ranges: fewer points, ±3% deltas
- */
 function generateSimulatedChartData(basePrice, timeRange) {
   const now = new Date();
   let data = [];
-
   if (timeRange === "1D") {
-    // 60 data points for the past hour
     const dataPoints = 60;
     let currentPrice = basePrice;
     for (let i = 0; i < dataPoints; i++) {
@@ -94,48 +87,38 @@ function generateSimulatedChartData(basePrice, timeRange) {
 export default function StockDetail() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const stock = useSelector((state) => state.stocks.byId[id]);
+  const stock = useSelector((state) => state.stocks.byId[id], shallowEqual);
   const { setModalContent } = useModal();
 
-  // Chart time range
   const [timeRange, setTimeRange] = useState("1D");
   const [chartData, setChartData] = useState([]);
-
-  // Global y-axis range that only expands
   const [yAxisRange, setYAxisRange] = useState({ min: Infinity, max: -Infinity });
 
-  // (Optional) Initial HTTP load of stock details
+  // Initial HTTP load of stock details
   useEffect(() => {
     dispatch(thunkLoadOneStock(id));
   }, [dispatch, id]);
 
-  // Subscribe to real-time stock updates via WebSocket.
+  // Polling every 5 seconds to fetch the latest stock data
   useEffect(() => {
-    socket.emit("subscribe_stock", { stock_id: id });
-    socket.on("stock_update", (data) => {
-      if (data.id === Number(id)) {
-        dispatch({ type: "UPDATE_STOCK", payload: data });
-      }
-    });
-    return () => {
-      socket.off("stock_update");
-    };
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadOneStock(id));
+    }, 2500); // adjust the interval as needed
+    return () => clearInterval(intervalId);
   }, [dispatch, id]);
 
-  // Generate new chart data whenever the stock price or time range changes.
+  // Regenerate chart data when stock or time range changes
   useEffect(() => {
     if (!stock) return;
     const simData = generateSimulatedChartData(stock.market_price, timeRange);
     setChartData(simData);
   }, [stock, timeRange]);
 
-  // Update y-axis range if new chart data falls outside the current range.
   useEffect(() => {
     if (chartData.length === 0) return;
     const prices = chartData.map((p) => p.price);
     const dataMin = Math.min(...prices);
     const dataMax = Math.max(...prices);
-
     setYAxisRange((prev) => ({
       min: Math.min(prev.min, dataMin),
       max: Math.max(prev.max, dataMax),
@@ -152,7 +135,6 @@ export default function StockDetail() {
   const yMin = yAxisRange.min - buffer;
   const yMax = yAxisRange.max + buffer;
 
-  // Prepare Chart.js data
   const chartJSData = {
     labels: chartData.map((p) => p.date),
     datasets: [
@@ -169,18 +151,12 @@ export default function StockDetail() {
 
   const chartOptions = {
     responsive: true,
-    animation: {
-      duration: 600,
-      easing: "easeInOutQuad",
-    },
+    animation: { duration: 600, easing: "easeInOutQuad" },
     scales: {
       y: {
         min: Number.isFinite(yMin) ? yMin : 0,
         max: Number.isFinite(yMax) ? yMax : 100,
-        ticks: {
-          stepSize: 0.5,
-          callback: (value) => value.toFixed(2),
-        },
+        ticks: { stepSize: 0.5, callback: (value) => value.toFixed(2) },
       },
     },
     plugins: {
@@ -189,13 +165,8 @@ export default function StockDetail() {
     },
   };
 
-  // Modal handlers
-  const handleReviewOrder = () => {
-    setModalContent(<BuyOrderModal stockId={id} />);
-  };
-  const handleAddToWatchlist = () => {
-    setModalContent(<AddToWatchlistModal stockId={id} />);
-  };
+  const handleReviewOrder = () => setModalContent(<BuyOrderModal stockId={id} />);
+  const handleAddToWatchlist = () => setModalContent(<AddToWatchlistModal stockId={id} />);
 
   return (
     <div className="stock-detail">
@@ -210,7 +181,6 @@ export default function StockDetail() {
           <p>Current Price: ${Number(displayedPrice).toFixed(2)}</p>
         </div>
       </div>
-
       <div className="main-content">
         <div className="chart-section">
           <Line data={chartJSData} options={chartOptions} />
@@ -226,7 +196,6 @@ export default function StockDetail() {
             ))}
           </div>
         </div>
-
         <div className="buy-stock-card">
           <h2>Buy {stock.ticker_symbol}</h2>
           <p>Market Price: ${Number(displayedPrice).toFixed(2)}</p>

@@ -1,0 +1,77 @@
+/* LoginForm.css */
+
+/* 
+  Outer container that centers everything in the viewport.
+  Adjust min-height to 100vh if you want full-screen height.
+*/
+.login-page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* vertical centering */
+    align-items: center;     /* horizontal centering */
+    min-height: 80vh;        /* or 100vh for full screen */
+    color: #ffffff;          /* white text on black background */
+    text-align: center;      /* center text if you want */
+  }
+  
+  /* Space below the heading */
+  .login-page-container h1 {
+    margin-bottom: 24px;
+  }
+  
+  /* Form styling: stack fields vertically */
+  .login-page-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 320px; /* keep form at a reasonable width */
+    width: 100%;       /* let it shrink on smaller screens */
+  }
+  
+  /* Labels: stacked text above the input */
+  .login-page-container label {
+    display: flex;
+    flex-direction: column;
+    text-align: left;  /* label text left-aligned, if you prefer */
+    font-size: 0.9rem;
+  }
+  
+  /* Inputs: dark background, white text */
+  .login-page-container input {
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid white;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+  
+  .login-page-container input:focus {
+    outline: none;
+    border-color: white; /* subtle green highlight on focus */
+  }
+  
+  /* Error text in red (optional) */
+  .error-text {
+    color: #ff4444;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  
+  /* Green button style consistent with your other login form */
+  .green-button {
+    background-color: #008000;
+    color: #ffffff;
+    border: 1px solid white;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .green-button:hover {
+    background-color: #00a000;
+  }
+  

@@ -7,7 +7,6 @@ import { useModal } from "../../context/Modal";
 import CreatePortfolioModal from "./CreatePortfolioModal";
 import DeletePortfolioModal from "./DeletePortfolioModal";
 import { FaPlus } from "react-icons/fa";
-import socket from "../../socket"; // Shared Socket.IO instance
 import "./PortfolioList.css";
 
 export default function PortfolioList() {
@@ -15,21 +14,17 @@ export default function PortfolioList() {
   const { setModalContent } = useModal();
   const portfolios = useSelector((state) => Object.values(state.portfolios));
 
-  // Initial HTTP load on mount
+  // Initial HTTP load on mount.
   useEffect(() => {
     dispatch(thunkLoadPortfolios());
   }, [dispatch]);
 
-  // Subscribe to live portfolio list updates via WebSocket.
+  // Polling: re-fetch portfolios every 5 seconds.
   useEffect(() => {
-    socket.emit("subscribe_portfolio_list");
-    socket.on("portfolio_list_update", (data) => {
-      // Dispatch an action to update the portfolios in Redux.
-      dispatch({ type: "UPDATE_PORTFOLIOS", payload: data });
-    });
-    return () => {
-      socket.off("portfolio_list_update");
-    };
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadPortfolios());
+    }, 1500); // adjust the interval as needed
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   const openCreatePortfolioModal = () => {
