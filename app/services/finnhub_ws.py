@@ -8,6 +8,8 @@ from app.models import db, Stock  # Ensure your models are properly defined
 from flask import current_app
 
 FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
+# Change the update interval to 3 seconds (adjust as needed)
+UPDATE_INTERVAL_SECONDS = 3
 
 # Global dictionary to hold the latest update for each ticker.
 # Each key is the ticker symbol, and the value is a tuple (price, update_time)
@@ -59,7 +61,8 @@ def run_finnhub_ws(app):
         # Function that will run in a separate thread to process batched updates.
         def process_stock_updates():
             while True:
-                time.sleep(1)  # Batch interval of 1 second.
+                # Wait for the defined interval (3 seconds) before processing updates.
+                time.sleep(UPDATE_INTERVAL_SECONDS)
                 # Use the app context because we're doing DB operations.
                 with app.app_context():
                     # Retrieve and clear the updates atomically.
