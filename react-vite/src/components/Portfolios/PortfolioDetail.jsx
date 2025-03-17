@@ -36,7 +36,7 @@ export default function PortfolioDetail() {
     const intervalId = setInterval(() => {
       dispatch(thunkLoadOnePortfolio(id));
       dispatch(thunkLoadHoldingsForPortfolio(id));
-    }, 1000); // adjust the interval as needed (e.g., 5000ms = 5 seconds)
+    }, 2500); // adjust the interval as needed (e.g., 5000ms = 5 seconds)
     return () => clearInterval(intervalId);
   }, [dispatch, id]);
 

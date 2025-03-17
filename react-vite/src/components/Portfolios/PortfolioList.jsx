@@ -23,7 +23,7 @@ export default function PortfolioList() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       dispatch(thunkLoadPortfolios());
-    }, 1500); // adjust the interval as needed
+    }, 2500); // adjust the interval as needed
     return () => clearInterval(intervalId);
   }, [dispatch]);
 
