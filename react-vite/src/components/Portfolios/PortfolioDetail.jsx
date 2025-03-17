@@ -8,7 +8,8 @@ import { useModal } from "../../context/Modal";
 import DeletePortfolioModal from "./DeletePortfolioModal";
 import BuyOrderModal from "./BuyOrderModal";
 import SellOrderModal from "./SellOrderModal";
-import socket from "../../socket"; // Shared Socket.IO instance
+// Removed the websocket import since we’re not using WS updates here
+// import socket from "../../socket";
 import "./PortfolioDetail.css";
 
 export default function PortfolioDetail() {
@@ -24,20 +25,22 @@ export default function PortfolioDetail() {
     )
   );
 
+  // Initial HTTP load of portfolio and holdings.
   useEffect(() => {
     dispatch(thunkLoadOnePortfolio(id));
     dispatch(thunkLoadHoldingsForPortfolio(id));
   }, [dispatch, id]);
 
+  // Polling: re-fetch portfolio and holdings every 5 seconds.
   useEffect(() => {
-    socket.emit("subscribe_portfolio", { portfolio_id: id });
-    socket.on("portfolio_update", (data) => {
-      if (data.id === Number(id)) {
-        dispatch({ type: "UPDATE_PORTFOLIO", payload: data });
-      }
-    });
-    return () => socket.off("portfolio_update");
+    const intervalId = setInterval(() => {
+      dispatch(thunkLoadOnePortfolio(id));
+      dispatch(thunkLoadHoldingsForPortfolio(id));
+    }, 1000); // adjust the interval as needed (e.g., 5000ms = 5 seconds)
+    return () => clearInterval(intervalId);
   }, [dispatch, id]);
+
+  // (Removed WS subscription for portfolio updates)
 
   if (!portfolio) return <p>Loading portfolio...</p>;
 
@@ -90,10 +93,21 @@ export default function PortfolioDetail() {
         <ul>
           {holdings.map((holding) => (
             <li key={holding.id} className="holding-item">
-              <p><strong>Stock Ticker:</strong> {holding.stock?.ticker_symbol}</p>
-              <p><strong>Company Name:</strong> {holding.stock?.company_name}</p>
-              <p><strong>Quantity:</strong> {holding.quantity}</p>
-              <p><strong>Current Price:</strong> ${Number(holding.stock.market_price).toFixed(2)}</p>
+              <p>
+                <strong>Stock Ticker:</strong>{" "}
+                {holding.stock?.ticker_symbol}
+              </p>
+              <p>
+                <strong>Company Name:</strong>{" "}
+                {holding.stock?.company_name}
+              </p>
+              <p>
+                <strong>Quantity:</strong> {holding.quantity}
+              </p>
+              <p>
+                <strong>Current Price:</strong>{" "}
+                ${Number(holding.stock.market_price).toFixed(2)}
+              </p>
               <div className="holding-actions">
                 <button onClick={() => openBuyModal(holding)}>Buy</button>
                 <button onClick={() => openSellModal(holding)}>Sell</button>

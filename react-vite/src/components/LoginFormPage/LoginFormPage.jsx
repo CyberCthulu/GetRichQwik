@@ -2,7 +2,7 @@ import { useState } from "react";
 import { thunkLogin } from "../../redux/session";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
-import "./LoginForm.css";
+import "./LoginForm.css"; // same CSS file or a new one
 
 function LoginFormPage() {
   const navigate = useNavigate();
@@ -16,14 +16,7 @@ function LoginFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const serverResponse = await dispatch(
-      thunkLogin({
-        email,
-        password,
-      })
-    );
-
+    const serverResponse = await dispatch(thunkLogin({ email, password }));
     if (serverResponse) {
       setErrors(serverResponse);
     } else {
@@ -32,10 +25,10 @@ function LoginFormPage() {
   };
 
   return (
-    <>
-      <h1>Log In</h1>
-      {errors.length > 0 &&
-        errors.map((message) => <p key={message}>{message}</p>)}
+    <div className="login-page-container">
+      <h1>You must be logged in to Access this page</h1>
+      {errors.length > 0 && errors.map((message) => <p key={message}>{message}</p>)}
+
       <form onSubmit={handleSubmit}>
         <label>
           Email
@@ -46,7 +39,8 @@ function LoginFormPage() {
             required
           />
         </label>
-        {errors.email && <p>{errors.email}</p>}
+        {errors.email && <p className="error-text">{errors.email}</p>}
+
         <label>
           Password
           <input
@@ -56,10 +50,11 @@ function LoginFormPage() {
             required
           />
         </label>
-        {errors.password && <p>{errors.password}</p>}
-        <button type="submit">Log In</button>
+        {errors.password && <p className="error-text">{errors.password}</p>}
+
+        <button type="submit" className="green-button">Log In</button>
       </form>
-    </>
+    </div>
   );
 }
 

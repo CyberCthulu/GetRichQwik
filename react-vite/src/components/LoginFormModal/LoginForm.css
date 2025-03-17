@@ -1,0 +1,84 @@
+/* LoginForm.css */
+
+/* Outer container for the entire modal content */
+.login-modal-container {
+    /* Dark background + white border to match your screenshot */
+    background-color: #000; 
+    border-radius: 6px;
+    padding: 24px;
+    max-width: 400px; /* limit width so form isn't too wide */
+    margin: 0 auto;   /* center if the modal allows extra space */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  /* Modal title */
+  .login-modal-container h1 {
+    color: #ffffff;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  
+  /* Stack form elements vertically with space in between */
+  .login-modal-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* space between label/input blocks */
+  }
+  
+  /* Labels are stacked, with input below the label text */
+  .login-modal-container label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+  
+  /* Inputs: dark background, white text, subtle border */
+  .login-modal-container input {
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid #666666;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+  
+  .login-modal-container input:focus {
+    outline: none;
+    border-color: #00cc00; /* a subtle green focus highlight */
+  }
+  
+  /* Error text in red (optional) */
+  .error-text {
+    color: #ff4444;
+    font-size: 0.85rem;
+    margin: 0; /* remove default paragraph margins */
+  }
+  
+  /* Button container to line up the two buttons horizontally */
+  .button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center; /* or flex-start/flex-end, as you prefer */
+  }
+  
+  /* Green button styling consistent with your existing site */
+  .green-button {
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .green-button:hover {
+    background-color: black; /* slightly brighter green on hover */
+    border: 1px solid white;
+
+  }
+  

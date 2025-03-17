@@ -13,14 +13,22 @@ function LoginFormModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const serverResponse = await dispatch(thunkLogin({ email, password }));
+    if (serverResponse) {
+      setErrors(serverResponse);
+    } else {
+      closeModal();
+    }
+  };
 
+  const handleDemoLogin = async (e) => {
+    e.preventDefault();
     const serverResponse = await dispatch(
       thunkLogin({
-        email,
-        password,
+        email: "demo@aa.io",
+        password: "password",
       })
     );
-
     if (serverResponse) {
       setErrors(serverResponse);
     } else {
@@ -29,7 +37,7 @@ function LoginFormModal() {
   };
 
   return (
-    <>
+    <div className="login-modal-container">
       <h1>Log In</h1>
       <form onSubmit={handleSubmit}>
         <label>
@@ -41,7 +49,8 @@ function LoginFormModal() {
             required
           />
         </label>
-        {errors.email && <p>{errors.email}</p>}
+        {errors.email && <p className="error-text">{errors.email}</p>}
+
         <label>
           Password
           <input
@@ -51,10 +60,16 @@ function LoginFormModal() {
             required
           />
         </label>
-        {errors.password && <p>{errors.password}</p>}
-        <button type="submit">Log In</button>
+        {errors.password && <p className="error-text">{errors.password}</p>}
+
+        <div className="button-group">
+          <button type="submit" className="green-button">Log In</button>
+          <button type="button" onClick={handleDemoLogin} className="green-button">
+            Login as Demo User
+          </button>
+        </div>
       </form>
-    </>
+    </div>
   );
 }
 
