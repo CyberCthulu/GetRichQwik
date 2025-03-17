@@ -1,21 +1,24 @@
 import os
 import json
 import websocket
+import threading
+import time
 from datetime import datetime
-from app.models import db, Stock, Holding  # Ensure your models are properly defined
+from app.models import db, Stock  # Ensure your models are properly defined
 from flask import current_app
 
-# Global dictionary to track the last update time for each ticker
-last_update_time = {}
-# Throttle threshold in seconds (adjust as needed)
-THROTTLE_SECONDS = 1
-
 FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
+
+# Global dictionary to hold the latest update for each ticker.
+# Each key is the ticker symbol, and the value is a tuple (price, update_time)
+stock_updates = {}
+# Lock to synchronize access to stock_updates
+stock_updates_lock = threading.Lock()
 
 def run_finnhub_ws(app):
     """
     Connect to Finnhub's WebSocket, subscribe to all symbols in the DB,
-    update stock prices, and trigger live UI updates.
+    collect stock price updates, and trigger live UI updates in batches.
     """
     with app.app_context():
         finnhub_ws_url = f"wss://ws.finnhub.io?token={FINNHUB_API_KEY}"
@@ -29,30 +32,9 @@ def run_finnhub_ws(app):
                         price = trade.get("p")
                         trade_timestamp = trade.get("t") / 1000.0
                         trade_time = datetime.utcfromtimestamp(trade_timestamp)
-
-                        # Throttle: skip update if last update was within THROTTLE_SECONDS
-                        last_time = last_update_time.get(ticker)
-                        if last_time and (trade_time - last_time).total_seconds() < THROTTLE_SECONDS:
-                            continue
-
-                        stock = Stock.query.filter_by(ticker_symbol=ticker).first()
-                        if stock:
-                            # Only update if the price has changed
-                            if stock.market_price != price:
-                                stock.market_price = price
-                                stock.last_updated = datetime.utcnow()
-                                db.session.commit()
-
-                                # Record the update time
-                                last_update_time[ticker] = trade_time
-                                print(f"WS Updated {ticker} to {price} at {trade_time}")
-
-                                # Emit a 'stock_update' event for live UI updates
-                                socketio = app.config.get("socketio")
-                                if socketio:
-                                    socketio.emit("stock_update", stock.to_dict())
-                        else:
-                            print(f"Ignored update for unseeded ticker: {ticker}")
+                        # Store/update the latest price for the ticker in our shared dictionary.
+                        with stock_updates_lock:
+                            stock_updates[ticker] = (price, trade_time)
                 else:
                     print("Received non-trade message:", data)
             except Exception as e:
@@ -66,7 +48,7 @@ def run_finnhub_ws(app):
 
         def on_open(ws):
             print("Global WS connection opened")
-            # Dynamically fetch all ticker symbols from the DB and subscribe to each.
+            # Subscribe to all ticker symbols from the DB.
             all_stocks = Stock.query.all()
             for stock in all_stocks:
                 symbol = stock.ticker_symbol
@@ -74,11 +56,50 @@ def run_finnhub_ws(app):
                 ws.send(subscribe_message)
                 print(f"Subscribed to {symbol}")
 
-        ws = websocket.WebSocketApp(
+        # Function that will run in a separate thread to process batched updates.
+        def process_stock_updates():
+            while True:
+                time.sleep(1)  # Batch interval of 1 second.
+                # Use the app context because we're doing DB operations.
+                with app.app_context():
+                    # Retrieve and clear the updates atomically.
+                    with stock_updates_lock:
+                        updates = stock_updates.copy()
+                        stock_updates.clear()
+                    for ticker, (price, update_time) in updates.items():
+                        stock = Stock.query.filter_by(ticker_symbol=ticker).first()
+                        if stock:
+                            # Only update if the price has changed.
+                            if stock.market_price != price:
+                                stock.market_price = price
+                                stock.last_updated = datetime.utcnow()
+                                db.session.commit()
+                                print(f"WS Updated {ticker} to {price} at {update_time}")
+                                # Emit a 'stock_update' event for live UI updates.
+                                socketio = app.config.get("socketio")
+                                if socketio:
+                                    socketio.emit("stock_update", stock.to_dict())
+                        else:
+                            print(f"Ignored update for unseeded ticker: {ticker}")
+
+        # Start the thread for processing updates.
+        updater_thread = threading.Thread(target=process_stock_updates, daemon=True)
+        updater_thread.start()
+
+        # Setup the WebSocketApp.
+        ws_app = websocket.WebSocketApp(
             finnhub_ws_url,
             on_message=on_message,
             on_error=on_error,
             on_close=on_close,
         )
-        ws.on_open = on_open
-        ws.run_forever()
+        ws_app.on_open = on_open
+
+        # Implement a reconnection loop.
+        while True:
+            try:
+                ws_app.run_forever(ping_interval=30, ping_timeout=10)
+            except Exception as e:
+                print("WebSocket encountered exception:", e)
+            print("Reconnecting in 5 seconds...")
+            time.sleep(5)
