@@ -73,9 +73,8 @@
   
   /* Time Range Buttons */
   .time-range-buttons {
-    border: 1px solid white; /* White outline */
     display: flex;
-    justify-content: center;
+    justify-content: left;
     gap: 8px;
     margin-top: 15px;
   }

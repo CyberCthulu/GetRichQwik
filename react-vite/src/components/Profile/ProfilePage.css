@@ -1,7 +1,7 @@
 /* src/components/Profile/ProfilePage.css */
 
 .profile-page {
-    background-color: #111;       /* Dark background */
+    background-color: black;       /* Dark background */
     color: #fff;                  /* White text */
     padding: 20px;
     min-height: 100vh;
