@@ -5,7 +5,7 @@
   background: black;
   height: 60px;
   padding: 0 20px;
-  border-bottom: 2px solid white;
+  border-bottom: 1px solid white;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -28,7 +28,7 @@
   height: 50px;
   border-radius: 80%;
   transition: transform 0.2s ease-in-out;
-  border-radius: 2px solid white;
+  border: 2px solid white;
 
 }
 
@@ -91,4 +91,76 @@
 .nav-right {
   display: flex;
   align-items: center;
+}
+.stock-search-bar {
+  position: relative; /* CRUCIAL: anchors the dropdown below */
+  width: 100%;
+  max-width: 400px; /* optional limit to keep the bar from being too wide */
+}
+
+/* The search form container */
+.search-form {
+  display: flex;
+  align-items: center;
+}
+
+/* The text input */
+.search-input {
+  flex: 1; /* fill remaining space in the form */
+  padding: 8px 10px;
+  border: 1px solid #666666;
+  border-radius: 4px 0 0 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+/* The search button */
+.search-button {
+  padding: 8px 14px;
+  border-radius: 0 4px 4px 0;
+  background-color: #008000; /* green color */
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.search-button:hover {
+  background-color: black;
+  border: 1px solid white;
+}
+
+/* The dropdown list */
+.search-results {
+  position: absolute; /* anchored relative to .stock-search-bar */
+  top: 100%;          /* directly below the search form */
+  left: 0;
+  margin-top: 4px;    /* small gap below the form */
+  width: 100%;        /* match the width of the parent container */
+  background-color: black;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  z-index: 999;       /* ensures it appears above other elements */
+}
+
+/* Each search result item */
+.search-result-item {
+  background-color: black;
+  padding: 8px 12px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  white-space: nowrap; /* keep text on one line, or remove if you prefer wrapping */
+}
+
+.search-result-item:hover {
+  background-color: green;
 }
