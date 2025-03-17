@@ -80,14 +80,21 @@ export const thunkUpdatePortfolio = (portfolioId, payload) => async (dispatch) =
 };
 
 // DELETE a portfolio
+// src/redux/portfolios.js
 export const thunkDeletePortfolio = (portfolioId) => async (dispatch) => {
   const res = await csrfFetch(`/api/portfolios/${portfolioId}`, {
     method: "DELETE",
   });
   if (res.ok) {
+    const data = await res.json();
     dispatch(removePortfolio(portfolioId));
+    return data;
+  } else {
+    const errorData = await res.json();
+    throw errorData;
   }
 };
+
 
 // ----------------- Reducer -----------------------
 export default function portfoliosReducer(state = {}, action) {

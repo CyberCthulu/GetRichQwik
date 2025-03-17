@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from decimal import Decimal
 from flask_login import login_required, current_user
 from datetime import datetime
 from app.models import Portfolio, User, Holding, Order, db
@@ -119,6 +120,41 @@ def update_portfolio(id):
 @portfolio_routes.route('/<int:id>', methods=['DELETE'])
 @login_required
 def delete_portfolio(id):
+    portfolio = Portfolio.query.get_or_404(id)
+    if portfolio.user_id != current_user.id:
+        return jsonify({"message": "Forbidden"}), 403
+
+    # Prevent deletion if there are active holdings
+    if portfolio.holdings and len(portfolio.holdings) > 0:
+        return jsonify({
+            "message": "Portfolio deletion error",
+            "errors": {
+                "holdings": "Please liquidate all holdings before deleting the portfolio."
+            }
+        }), 400
+
+    # Transfer remaining funds from portfolio back to user's cash_balance.
+    from decimal import Decimal
+    current_user.cash_balance = float(Decimal(str(current_user.cash_balance)) + portfolio.portfolio_balance)
+
+    db.session.delete(portfolio)
+    db.session.commit()
+    return jsonify({"message": "Portfolio deleted successfully"}), 200
+
+    portfolio = Portfolio.query.get_or_404(id)
+    if portfolio.user_id != current_user.id:
+        return jsonify({"message": "Forbidden"}), 403
+
+    # Convert current_user.cash_balance to Decimal and add portfolio.portfolio_balance,
+    # then convert back to float for storage (since SQLite doesn't support Decimal natively)
+    from decimal import Decimal
+    new_balance = Decimal(str(current_user.cash_balance)) + portfolio.portfolio_balance
+    current_user.cash_balance = float(new_balance)
+
+    db.session.delete(portfolio)
+    db.session.commit()
+    return jsonify({"message": "Portfolio deleted successfully"}), 200
+
     """
     Deletes an existing portfolio.
     Only allowed if the portfolio belongs to the current user.
@@ -137,7 +173,7 @@ def delete_portfolio(id):
         return jsonify({"message": "Forbidden"}), 403
 
     # Transfer remaining funds back to user's cash_balance.
-    current_user.cash_balance += portfolio.portfolio_balance
+    current_user.cash_balance = Decimal(str(current_user.cash_balance)) + portfolio.portfolio_balance
 
     db.session.delete(portfolio)
     db.session.commit()

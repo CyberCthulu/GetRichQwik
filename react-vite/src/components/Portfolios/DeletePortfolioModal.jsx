@@ -1,7 +1,7 @@
 // src/components/Portfolios/DeletePortfolioModal.jsx
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { thunkDeletePortfolio } from "../../redux/portfolios";
-// import "./DeletePortfolioModal.css"; // see styling below
 
 export default function DeletePortfolioModal({
   portfolioId,
@@ -10,16 +10,30 @@ export default function DeletePortfolioModal({
   onSuccess,
 }) {
   const dispatch = useDispatch();
+  const [errors, setErrors] = useState({});
 
   const handleConfirm = async () => {
-    // 1) Dispatch the thunk to delete the portfolio
-    await dispatch(thunkDeletePortfolio(portfolioId));
-    // 2) Optionally call onSuccess callback (e.g., to navigate)
-    if (typeof onSuccess === "function") {
-      onSuccess();
+    try {
+      // Attempt to delete the portfolio.
+      const response = await dispatch(thunkDeletePortfolio(portfolioId));
+      // If deletion is successful, call onSuccess (for navigation, etc.)
+      if (typeof onSuccess === "function") {
+        onSuccess();
+      }
+      // Close the modal only on success.
+      onClose();
+    } catch (error) {
+      // Log and set errors to display in the modal.
+      console.error("Delete portfolio error:", error);
+      // We assume error is an object like: { message: "Portfolio deletion error", errors: { holdings: "Please liquidate all holdings ..." } }
+      if (error?.message) {
+        setErrors({ server: error.message, ...error.errors });
+      } else if (error?.errors) {
+        setErrors(error.errors);
+      } else {
+        setErrors({ server: "Unexpected error. Please try again." });
+      }
     }
-    // 3) Close the modal
-    onClose();
   };
 
   return (
@@ -29,6 +43,9 @@ export default function DeletePortfolioModal({
         Are you sure you want to delete <strong>"{portfolioName}"</strong>?
       </p>
       <p>This action cannot be undone.</p>
+      {/* Display error messages if any */}
+      {errors.server && <p className="error-message">{errors.server}</p>}
+      {errors.holdings && <p className="error-message">{errors.holdings}</p>}
       <div className="modal-actions">
         <button onClick={handleConfirm} className="confirm-delete-btn">
           Yes, Delete

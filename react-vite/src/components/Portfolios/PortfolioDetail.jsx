@@ -1,15 +1,15 @@
-
 // src/components/Portfolios/PortfolioDetail.jsx
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { thunkLoadOnePortfolio, thunkDeletePortfolio } from "../../redux/portfolios";
+import { thunkLoadOnePortfolio } from "../../redux/portfolios";
 import { thunkLoadHoldingsForPortfolio } from "../../redux/holdings";
 import { useModal } from "../../context/Modal";
 import DeletePortfolioModal from "./DeletePortfolioModal";
+import BuyOrderModal from "./BuyOrderModal";
+import SellOrderModal from "./SellOrderModal";
 import socket from "../../socket"; // Shared Socket.IO instance
 import "./PortfolioDetail.css";
-// import BuySellModal from "./BuySellModal";
 
 export default function PortfolioDetail() {
   const { id } = useParams();
@@ -17,7 +17,6 @@ export default function PortfolioDetail() {
   const navigate = useNavigate();
   const { setModalContent } = useModal();
 
-  // Get the portfolio and its holdings from Redux
   const portfolio = useSelector((state) => state.portfolios[id]);
   const holdings = useSelector((state) =>
     Object.values(state.holdings).filter(
@@ -25,39 +24,39 @@ export default function PortfolioDetail() {
     )
   );
 
-  // Initial HTTP load on mount
   useEffect(() => {
     dispatch(thunkLoadOnePortfolio(id));
     dispatch(thunkLoadHoldingsForPortfolio(id));
   }, [dispatch, id]);
 
-  // Subscribe to live portfolio updates via WebSocket.
   useEffect(() => {
-    // Emit a subscription event for this portfolio
     socket.emit("subscribe_portfolio", { portfolio_id: id });
-    // Listen for updates from the backend.
     socket.on("portfolio_update", (data) => {
       if (data.id === Number(id)) {
         dispatch({ type: "UPDATE_PORTFOLIO", payload: data });
       }
     });
-    return () => {
-      socket.off("portfolio_update");
-    };
+    return () => socket.off("portfolio_update");
   }, [dispatch, id]);
 
   if (!portfolio) return <p>Loading portfolio...</p>;
 
-  // Opens the buy/sell modal (placeholder; adjust as needed)
-  const openBuySellModal = (holding, actionType) => {
+  const openBuyModal = (holding) => {
     setModalContent(
-      // Uncomment and use your BuySellModal when ready:
-      // <BuySellModal
-      //   holding={holding}
-      //   actionType={actionType}
-      //   onClose={() => setModalContent(null)}
-      // />
-      <div>Buy/Sell Modal Placeholder</div>
+      <BuyOrderModal
+        stockId={holding.stock_id}
+        onClose={() => setModalContent(null)}
+      />
+    );
+  };
+
+  const openSellModal = (holding) => {
+    setModalContent(
+      <SellOrderModal
+        stockId={holding.stock_id}
+        portfolioId={portfolio.id}
+        onClose={() => setModalContent(null)}
+      />
     );
   };
 
@@ -67,10 +66,7 @@ export default function PortfolioDetail() {
         portfolioId={portfolio.id}
         portfolioName={portfolio.name}
         onClose={() => setModalContent(null)}
-        onSuccess={() => {
-          // After deletion, navigate back to the portfolio list.
-          navigate("/portfolios");
-        }}
+        onSuccess={() => navigate("/portfolios")}
       />
     );
   };
@@ -94,31 +90,13 @@ export default function PortfolioDetail() {
         <ul>
           {holdings.map((holding) => (
             <li key={holding.id} className="holding-item">
-              <p>
-                <strong>Stock Ticker:</strong> {holding.stock?.ticker_symbol}
-              </p>
-              <p>
-                <strong>Company Name:</strong> {holding.stock?.company_name}
-              </p>
-              <p>
-                <strong>Stock ID:</strong> {holding.stock_id}
-              </p>
-              <p>
-                <strong>Quantity:</strong> {holding.quantity}
-              </p>
-              <p>
-                <strong>Current Price:</strong> $
-                {holding.stock
-                  ? Number(holding.stock.market_price).toFixed(2)
-                  : "N/A"}
-              </p>
+              <p><strong>Stock Ticker:</strong> {holding.stock?.ticker_symbol}</p>
+              <p><strong>Company Name:</strong> {holding.stock?.company_name}</p>
+              <p><strong>Quantity:</strong> {holding.quantity}</p>
+              <p><strong>Current Price:</strong> ${Number(holding.stock.market_price).toFixed(2)}</p>
               <div className="holding-actions">
-                <button onClick={() => openBuySellModal(holding, "buy")}>
-                  Buy
-                </button>
-                <button onClick={() => openBuySellModal(holding, "sell")}>
-                  Sell
-                </button>
+                <button onClick={() => openBuyModal(holding)}>Buy</button>
+                <button onClick={() => openSellModal(holding)}>Sell</button>
               </div>
             </li>
           ))}

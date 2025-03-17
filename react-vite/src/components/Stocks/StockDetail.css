@@ -60,8 +60,7 @@
   .time-range-buttons {
     margin-top: 10px;
     display: flex;
-    border: 1px solid white; /* White outline */
-    justify-content: center;
+    justify-content: left;
     flex-wrap: wrap; /* wrap if not enough space */
     gap: 8px;
   }

@@ -6,18 +6,20 @@
     max-width: 500px;
     width: 100%;
     box-sizing: border-box;
-    background-color: white; /* inherits base background if not overridden */
+    background-color: black; /* inherits base background if not overridden */
     border-radius: 8px; /* ensure rounded corners */
     color: #000;
   }
   
   .update-profile-modal h2 {
+    background-color: black;
     margin-top: 0;
     margin-bottom: 20px; /* extra spacing after the heading */
     text-align: center;
   }
   
   .update-profile-modal form {
+    background-color: black;
     display: flex;
     flex-direction: column;
     gap: 5px; /* space between input groups */
