@@ -55,16 +55,26 @@ export const thunkLoadOnePortfolio = (portfolioId) => async (dispatch) => {
 
 // POST create a new portfolio
 export const thunkCreatePortfolio = (payload) => async (dispatch) => {
-  const res = await csrfFetch("/api/portfolios/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  if (res.ok) {
-    const data = await res.json();
-    dispatch(addPortfolio(data.portfolio));
-    return data.portfolio;
+  try {
+    const res = await csrfFetch("/api/portfolios/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      dispatch(addPortfolio(data.portfolio));
+      return data.portfolio;
+    } else {
+      const errorData = await res.json();
+      // Attach a .json method to mimic a Response object
+      throw { ...res, json: async () => errorData };
+    }
+  } catch (err) {
+    throw err; // This allows your modal to catch and display the error
   }
 };
+
 
 // PUT update a portfolio
 export const thunkUpdatePortfolio = (portfolioId, payload) => async (dispatch) => {
