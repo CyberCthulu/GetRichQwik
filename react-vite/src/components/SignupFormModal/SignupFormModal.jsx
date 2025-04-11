@@ -56,7 +56,7 @@ const handleSubmit = async (e) => {
 
   return (
 <>
-  <h1>Sign Up</h1>
+  <h1 className="signup-form-container">Sign Up</h1>
   {errors.server && <p className="error-message">{errors.server}</p>}
   <form onSubmit={handleSubmit} className="signup-form-container">
     <label>

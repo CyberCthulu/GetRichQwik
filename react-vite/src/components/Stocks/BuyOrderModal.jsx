@@ -3,25 +3,17 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { thunkCreateOrder } from "../../redux/orders";
 import { thunkLoadPortfolios } from "../../redux/portfolios";
-import { useModal } from "../../context/Modal";  // Import the modal context
+import { useModal } from "../../context/Modal";
 
 export default function BuyOrderModal({ stockId, onClose }) {
   const dispatch = useDispatch();
+  const { closeModal } = useModal();
+
   const [quantity, setQuantity] = useState(1);
   const [isLimitOrder, setIsLimitOrder] = useState(false);
   const [limitPrice, setLimitPrice] = useState("");
   const [selectedPortfolio, setSelectedPortfolio] = useState("");
-
-  // Get the closeModal function from our modal context
-  const { closeModal } = useModal();
-  // Use the passed onClose prop if available; otherwise fallback to closeModal.
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    } else {
-      closeModal();
-    }
-  };
+  const [errors, setErrors] = useState({});
 
   // Get portfolios and session user from Redux
   const portfolios = useSelector((state) => Object.values(state.portfolios));
@@ -34,8 +26,18 @@ export default function BuyOrderModal({ stockId, onClose }) {
     }
   }, [dispatch, sessionUser]);
 
+  // Use the passed onClose prop if available; otherwise fallback to closeModal.
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      closeModal();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Clear previous errors
 
     if (!selectedPortfolio) {
       alert("Please select a portfolio.");
@@ -53,19 +55,34 @@ export default function BuyOrderModal({ stockId, onClose }) {
     };
 
     try {
-      // Dispatch the order creation thunk.
-      await dispatch(thunkCreateOrder(payload));
-      // Close the modal after a successful order.
-      handleClose();
+      const response = await dispatch(thunkCreateOrder(payload));
+
+      if (response?.errors) {
+        setErrors(response.errors);
+      } else if (response?.message) {
+        setErrors({ server: response.message });
+      } else {
+        // Success, close modal
+        handleClose();
+      }
     } catch (error) {
       console.error("Order creation error:", error);
-      // Optionally add error handling here.
+      if (error?.message) {
+        setErrors({ server: error.message });
+      } else if (error?.errors) {
+        setErrors(error.errors);
+      } else {
+        setErrors({ server: "Unexpected error. Please try again." });
+      }
     }
   };
 
   return (
     <div className="buy-order-modal">
       <h2>Review Order</h2>
+      {/* Display server-level error if any */}
+      {errors.server && <p className="error-message">{errors.server}</p>}
+      
       <form onSubmit={handleSubmit}>
         <label>Quantity:</label>
         <input
@@ -75,6 +92,7 @@ export default function BuyOrderModal({ stockId, onClose }) {
           min="1"
           required
         />
+        {errors.quantity && <p className="error-message">{errors.quantity}</p>}
 
         <label>Order Type:</label>
         <select
@@ -95,6 +113,9 @@ export default function BuyOrderModal({ stockId, onClose }) {
               onChange={(e) => setLimitPrice(e.target.value)}
               required
             />
+            {errors.limitPrice && (
+              <p className="error-message">{errors.limitPrice}</p>
+            )}
           </>
         )}
 

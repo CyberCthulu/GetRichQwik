@@ -104,7 +104,10 @@
   /* Profile dropdown list items (username, email, etc.) */
   .profile-dropdown li {
     display: block; /* Ensure each item takes a full line */
-    padding: 8px 16px;
+    flex-direction: row;
+    align-items: center;
+    white-space: nowrap;
+    padding: 10px 20px;
     font-size: 0.95rem;
     color: #ffffff;
     cursor: pointer;

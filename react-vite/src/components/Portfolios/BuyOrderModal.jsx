@@ -1,4 +1,4 @@
-// src/components/StockDetail/BuyOrderModal.jsx
+// src/components/Portfolios/BuyOrderModal.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { thunkCreateOrder } from "../../redux/orders";
